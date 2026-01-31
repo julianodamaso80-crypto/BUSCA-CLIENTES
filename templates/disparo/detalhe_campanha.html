@@ -1,0 +1,295 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ campanha.nome }} - Busca Clientes{% endblock %}
+
+{% block content %}
+<div class="space-y-6">
+    <!-- Header -->
+    <div class="flex justify-between items-start">
+        <div>
+            <div class="flex items-center space-x-3">
+                <a href="{% url 'disparo:dashboard' %}" class="text-gray-400 hover:text-gray-600">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
+                    </svg>
+                </a>
+                <h1 class="text-2xl font-bold text-gray-800">{{ campanha.nome }}</h1>
+                <span class="px-3 py-1 rounded-full text-sm font-medium
+                    {% if campanha.status == 'concluida' %}bg-green-100 text-green-700
+                    {% elif campanha.status == 'em_andamento' %}bg-blue-100 text-blue-700
+                    {% elif campanha.status == 'pausada' %}bg-yellow-100 text-yellow-700
+                    {% elif campanha.status == 'cancelada' %}bg-red-100 text-red-700
+                    {% else %}bg-gray-100 text-gray-700{% endif %}">
+                    {{ campanha.get_status_display }}
+                </span>
+            </div>
+            <p class="text-gray-600 mt-1">Lista: {{ campanha.busca.termo_busca }}</p>
+        </div>
+
+        <div class="flex space-x-3">
+            {% if campanha.status == 'rascunho' or campanha.status == 'pausada' %}
+            <button onclick="iniciarCampanha()" class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg font-medium flex items-center transition">
+                <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z"></path>
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                </svg>
+                Iniciar Disparo
+            </button>
+            {% endif %}
+
+            {% if campanha.status == 'em_andamento' %}
+            <button onclick="pausarCampanha()" class="bg-yellow-600 hover:bg-yellow-700 text-white px-4 py-2 rounded-lg font-medium flex items-center transition">
+                <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 9v6m4-6v6m7-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                </svg>
+                Pausar
+            </button>
+            {% endif %}
+
+            {% if campanha.status != 'concluida' and campanha.status != 'cancelada' %}
+            <button onclick="cancelarCampanha()" class="bg-red-100 hover:bg-red-200 text-red-700 px-4 py-2 rounded-lg font-medium transition">
+                Cancelar
+            </button>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Cards de Estatísticas -->
+    <div class="grid grid-cols-2 md:grid-cols-5 gap-4">
+        <div class="bg-white rounded-xl shadow-sm p-5 border border-gray-100">
+            <p class="text-gray-500 text-sm">Total</p>
+            <p class="text-2xl font-bold text-gray-800">{{ campanha.total_contatos }}</p>
+        </div>
+        <div class="bg-white rounded-xl shadow-sm p-5 border border-gray-100">
+            <p class="text-gray-500 text-sm">Enviados</p>
+            <p class="text-2xl font-bold text-blue-600">{{ campanha.enviados }}</p>
+        </div>
+        <div class="bg-white rounded-xl shadow-sm p-5 border border-gray-100">
+            <p class="text-gray-500 text-sm">Entregues</p>
+            <p class="text-2xl font-bold text-green-600">{{ campanha.entregues }}</p>
+        </div>
+        <div class="bg-white rounded-xl shadow-sm p-5 border border-gray-100">
+            <p class="text-gray-500 text-sm">Falhas</p>
+            <p class="text-2xl font-bold text-red-600">{{ campanha.falhas }}</p>
+        </div>
+        <div class="bg-white rounded-xl shadow-sm p-5 border border-gray-100">
+            <p class="text-gray-500 text-sm">Taxa Entrega</p>
+            <p class="text-2xl font-bold text-purple-600">{{ campanha.taxa_entrega }}%</p>
+        </div>
+    </div>
+
+    <!-- Barra de Progresso -->
+    <div class="bg-white rounded-xl shadow-sm p-6 border border-gray-100">
+        <div class="flex justify-between items-center mb-2">
+            <span class="text-sm font-medium text-gray-700">Progresso do Disparo</span>
+            <span class="text-sm text-gray-500">{{ campanha.enviados }}/{{ campanha.total_contatos }}</span>
+        </div>
+        <div class="w-full bg-gray-200 rounded-full h-4">
+            {% widthratio campanha.enviados campanha.total_contatos 100 as progress %}
+            <div class="bg-gradient-to-r from-blue-500 to-blue-600 h-4 rounded-full transition-all duration-500" style="width: {{ progress|default:0 }}%"></div>
+        </div>
+    </div>
+
+    <!-- Mensagem da Campanha -->
+    <div class="bg-white rounded-xl shadow-sm p-6 border border-gray-100">
+        <h3 class="text-lg font-semibold text-gray-800 mb-3">Mensagem</h3>
+        <div class="bg-gray-50 rounded-lg p-4">
+            <p class="text-gray-700 whitespace-pre-wrap">{{ campanha.mensagem }}</p>
+        </div>
+        {% if campanha.usar_nome_cliente %}
+        <p class="mt-2 text-sm text-gray-500">
+            <svg class="w-4 h-4 inline mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+            </svg>
+            Personalização com nome ativada
+        </p>
+        {% endif %}
+    </div>
+
+    <!-- Lista de Envios -->
+    <div class="bg-white rounded-xl shadow-sm border border-gray-100">
+        <div class="p-5 border-b border-gray-100 flex justify-between items-center">
+            <h3 class="text-lg font-semibold text-gray-800">Detalhes dos Envios</h3>
+            <div class="flex space-x-2">
+                <span class="text-xs bg-gray-100 text-gray-600 px-2 py-1 rounded">Pendentes: {{ stats.pendentes }}</span>
+                <span class="text-xs bg-blue-100 text-blue-600 px-2 py-1 rounded">Enviados: {{ stats.enviados }}</span>
+                <span class="text-xs bg-red-100 text-red-600 px-2 py-1 rounded">Falhas: {{ stats.falhas }}</span>
+            </div>
+        </div>
+        <div class="overflow-x-auto">
+            <table class="w-full">
+                <thead class="bg-gray-50">
+                    <tr>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Contato</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Número</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Status</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Data Envio</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-gray-100">
+                    {% for log in logs %}
+                    <tr class="hover:bg-gray-50">
+                        <td class="px-6 py-4">
+                            <div class="font-medium text-gray-800">{{ log.nome_contato }}</div>
+                        </td>
+                        <td class="px-6 py-4 text-gray-500">{{ log.numero }}</td>
+                        <td class="px-6 py-4">
+                            <span class="px-2 py-1 rounded-full text-xs font-medium
+                                {% if log.status == 'enviado' or log.status == 'entregue' %}bg-green-100 text-green-700
+                                {% elif log.status == 'pendente' %}bg-gray-100 text-gray-700
+                                {% elif log.status == 'enviando' %}bg-blue-100 text-blue-700
+                                {% elif log.status == 'falha' %}bg-red-100 text-red-700
+                                {% elif log.status == 'bloqueado' %}bg-orange-100 text-orange-700
+                                {% else %}bg-gray-100 text-gray-700{% endif %}">
+                                {{ log.get_status_display }}
+                            </span>
+                        </td>
+                        <td class="px-6 py-4 text-gray-500 text-sm">
+                            {% if log.data_envio %}{{ log.data_envio|date:"d/m/Y H:i" }}{% else %}-{% endif %}
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="4" class="px-6 py-8 text-center text-gray-500">
+                            Nenhum envio registrado ainda
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- Modal de Status -->
+<div id="modalStatus" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50">
+    <div class="bg-white rounded-2xl p-8 max-w-md w-full mx-4 text-center">
+        <div id="statusLoading">
+            <svg class="animate-spin h-12 w-12 text-blue-600 mx-auto mb-4" fill="none" viewBox="0 0 24 24">
+                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+            </svg>
+            <p class="text-gray-600">Processando...</p>
+        </div>
+        <div id="statusResult" class="hidden">
+            <div id="statusIcon"></div>
+            <p id="statusMessage" class="text-lg font-medium mb-4"></p>
+            <button onclick="fecharModalStatus()" class="bg-gray-100 hover:bg-gray-200 text-gray-700 px-6 py-2 rounded-lg font-medium transition">
+                Fechar
+            </button>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+const campanhaId = {{ campanha.id }};
+
+async function iniciarCampanha() {
+    mostrarModal();
+
+    try {
+        const response = await fetch(`/disparo/campanha/${campanhaId}/iniciar/`, {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': '{{ csrf_token }}'
+            }
+        });
+
+        const data = await response.json();
+
+        if (data.success) {
+            mostrarResultado(true, data.message);
+            setTimeout(() => location.reload(), 2000);
+        } else {
+            mostrarResultado(false, data.error);
+        }
+    } catch (error) {
+        mostrarResultado(false, 'Erro ao iniciar campanha');
+    }
+}
+
+async function pausarCampanha() {
+    if (!confirm('Tem certeza que deseja pausar a campanha?')) return;
+
+    try {
+        const response = await fetch(`/disparo/campanha/${campanhaId}/pausar/`, {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': '{{ csrf_token }}'
+            }
+        });
+
+        const data = await response.json();
+        if (data.success) {
+            location.reload();
+        }
+    } catch (error) {
+        alert('Erro ao pausar campanha');
+    }
+}
+
+async function cancelarCampanha() {
+    if (!confirm('Tem certeza que deseja cancelar a campanha? Esta ação não pode ser desfeita.')) return;
+
+    try {
+        const response = await fetch(`/disparo/campanha/${campanhaId}/cancelar/`, {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': '{{ csrf_token }}'
+            }
+        });
+
+        const data = await response.json();
+        if (data.success) {
+            location.reload();
+        }
+    } catch (error) {
+        alert('Erro ao cancelar campanha');
+    }
+}
+
+function mostrarModal() {
+    document.getElementById('modalStatus').classList.remove('hidden');
+    document.getElementById('modalStatus').classList.add('flex');
+    document.getElementById('statusLoading').classList.remove('hidden');
+    document.getElementById('statusResult').classList.add('hidden');
+}
+
+function mostrarResultado(sucesso, mensagem) {
+    document.getElementById('statusLoading').classList.add('hidden');
+    document.getElementById('statusResult').classList.remove('hidden');
+
+    const iconEl = document.getElementById('statusIcon');
+    if (sucesso) {
+        iconEl.innerHTML = '<svg class="w-12 h-12 text-green-500 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>';
+    } else {
+        iconEl.innerHTML = '<svg class="w-12 h-12 text-red-500 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>';
+    }
+
+    document.getElementById('statusMessage').textContent = mensagem;
+}
+
+function fecharModalStatus() {
+    document.getElementById('modalStatus').classList.add('hidden');
+    document.getElementById('modalStatus').classList.remove('flex');
+}
+
+// Atualizar progresso a cada 5 segundos se campanha estiver em andamento
+{% if campanha.status == 'em_andamento' %}
+setInterval(async () => {
+    try {
+        const response = await fetch(`/disparo/campanha/${campanhaId}/progresso/`);
+        const data = await response.json();
+
+        if (data.status !== 'em_andamento') {
+            location.reload();
+        }
+    } catch (error) {
+        console.error('Erro ao verificar progresso:', error);
+    }
+}, 5000);
+{% endif %}
+</script>
+{% endblock %}

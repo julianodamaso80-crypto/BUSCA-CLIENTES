@@ -10,20 +10,24 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/6.0/ref/settings/
 """
 
+import os
 from pathlib import Path
+from dotenv import load_dotenv
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
+# Load environment variables from .env file
+load_dotenv(BASE_DIR / '.env')
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/6.0/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-5!tqt7#!tw9tw$^*%cm^ufin-hc0$sg^0a6-^il3^fqvr6v8a0'
+SECRET_KEY = os.getenv('SECRET_KEY', 'django-insecure-change-me-in-production')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = os.getenv('DEBUG', 'True').lower() == 'true'
 
 ALLOWED_HOSTS = []
 
@@ -44,6 +48,7 @@ INSTALLED_APPS = [
     # Local apps
     'accounts',
     'clientes',
+    'disparo',
 ]
 
 TAILWIND_APP_NAME = 'theme'
@@ -135,5 +140,13 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 # Authentication
 LOGIN_URL = 'login'
-LOGIN_REDIRECT_URL = 'buscar_clientes'
+LOGIN_REDIRECT_URL = 'dashboard'
 LOGOUT_REDIRECT_URL = 'login'
+
+# Apify Configuration
+APIFY_API_TOKEN = os.getenv('APIFY_API_TOKEN', '')
+APIFY_GOOGLE_MAPS_ACTOR = 'compass/google-maps-extractor'
+
+# Evolution API Configuration (WhatsApp)
+EVOLUTION_API_URL = os.getenv('EVOLUTION_API_URL', 'http://localhost:8080')
+EVOLUTION_API_KEY = os.getenv('EVOLUTION_API_KEY', 'change-me')

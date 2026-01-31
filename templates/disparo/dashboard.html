@@ -1,0 +1,182 @@
+{% extends 'base.html' %}
+
+{% block title %}Disparo WhatsApp - Busca Clientes{% endblock %}
+
+{% block content %}
+<div class="space-y-6">
+    <!-- Header -->
+    <div class="flex justify-between items-center">
+        <div>
+            <h1 class="text-2xl font-bold text-gray-800">Disparo WhatsApp</h1>
+            <p class="text-gray-600">Gerencie suas campanhas de mensagens</p>
+        </div>
+        <div class="flex space-x-3">
+            <a href="{% url 'disparo:conectar' %}" class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg font-medium flex items-center transition">
+                <svg class="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 24 24">
+                    <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/>
+                </svg>
+                Conectar WhatsApp
+            </a>
+            <a href="{% url 'disparo:criar_campanha' %}" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-medium flex items-center transition">
+                <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
+                </svg>
+                Nova Campanha
+            </a>
+        </div>
+    </div>
+
+    <!-- Cards de Status -->
+    <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+        <!-- Status da Conexão -->
+        <div class="bg-white rounded-xl shadow-sm p-5 border border-gray-100">
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="text-gray-500 text-sm">Conexão WhatsApp</p>
+                    {% if instancias %}
+                        {% with instancia=instancias.first %}
+                        <p class="text-xl font-bold {% if instancia.status == 'connected' %}text-green-600{% else %}text-yellow-600{% endif %}">
+                            {{ instancia.get_status_display }}
+                        </p>
+                        {% endwith %}
+                    {% else %}
+                        <p class="text-xl font-bold text-gray-400">Não configurado</p>
+                    {% endif %}
+                </div>
+                <div class="{% if instancias.first.status == 'connected' %}bg-green-100 text-green-600{% else %}bg-gray-100 text-gray-400{% endif %} p-3 rounded-full">
+                    <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
+                        <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/>
+                    </svg>
+                </div>
+            </div>
+        </div>
+
+        <!-- Mensagens Restantes -->
+        <div class="bg-white rounded-xl shadow-sm p-5 border border-gray-100">
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="text-gray-500 text-sm">Mensagens Hoje</p>
+                    <p class="text-xl font-bold text-blue-600">{{ mensagens_restantes }} restantes</p>
+                </div>
+                <div class="bg-blue-100 text-blue-600 p-3 rounded-full">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"></path>
+                    </svg>
+                </div>
+            </div>
+        </div>
+
+        <!-- Listas Disponíveis -->
+        <div class="bg-white rounded-xl shadow-sm p-5 border border-gray-100">
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="text-gray-500 text-sm">Listas Disponíveis</p>
+                    <p class="text-xl font-bold text-purple-600">{{ listas_disponiveis.count }}</p>
+                </div>
+                <div class="bg-purple-100 text-purple-600 p-3 rounded-full">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"></path>
+                    </svg>
+                </div>
+            </div>
+        </div>
+
+        <!-- Campanhas Ativas -->
+        <div class="bg-white rounded-xl shadow-sm p-5 border border-gray-100">
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="text-gray-500 text-sm">Campanhas</p>
+                    <p class="text-xl font-bold text-orange-600">{{ campanhas.count }}</p>
+                </div>
+                <div class="bg-orange-100 text-orange-600 p-3 rounded-full">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 3.055A9.001 9.001 0 1020.945 13H11V3.055z"></path>
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.488 9H15V3.512A9.025 9.025 0 0120.488 9z"></path>
+                    </svg>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Alerta Anti-Bloqueio -->
+    <div class="bg-amber-50 border border-amber-200 rounded-xl p-4">
+        <div class="flex items-start">
+            <svg class="w-6 h-6 text-amber-600 mr-3 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path>
+            </svg>
+            <div>
+                <h3 class="font-semibold text-amber-800">Proteção Anti-Bloqueio Ativada</h3>
+                <p class="text-amber-700 text-sm mt-1">
+                    Seu limite diário é de <strong>{{ config.limite_diario }} mensagens</strong>.
+                    Intervalo entre mensagens: <strong>{{ config.delay_minimo }}-{{ config.delay_maximo }}s</strong>.
+                    <a href="{% url 'disparo:configuracoes' %}" class="underline hover:no-underline">Ajustar configurações</a>
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Grid Principal -->
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <!-- Listas Disponíveis -->
+        <div class="bg-white rounded-xl shadow-sm border border-gray-100">
+            <div class="p-5 border-b border-gray-100">
+                <h2 class="text-lg font-semibold text-gray-800">Listas para Disparo</h2>
+            </div>
+            <div class="divide-y divide-gray-100 max-h-96 overflow-y-auto">
+                {% for lista in listas_disponiveis %}
+                <div class="p-4 hover:bg-gray-50 transition">
+                    <div class="flex justify-between items-center">
+                        <div>
+                            <h3 class="font-medium text-gray-800">{{ lista.termo_busca }}</h3>
+                            <p class="text-sm text-gray-500">
+                                {{ lista.total_resultados }} contatos • {{ lista.data_busca|date:"d/m/Y H:i" }}
+                            </p>
+                        </div>
+                        <a href="{% url 'disparo:criar_campanha' %}?lista={{ lista.id }}" class="bg-blue-100 hover:bg-blue-200 text-blue-700 px-3 py-1.5 rounded-lg text-sm font-medium transition">
+                            Disparar
+                        </a>
+                    </div>
+                </div>
+                {% empty %}
+                <div class="p-8 text-center text-gray-500">
+                    <p>Nenhuma lista disponível.</p>
+                    <a href="{% url 'buscar_clientes' %}" class="text-blue-600 hover:underline">Faça uma busca primeiro</a>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+
+        <!-- Campanhas Recentes -->
+        <div class="bg-white rounded-xl shadow-sm border border-gray-100">
+            <div class="p-5 border-b border-gray-100">
+                <h2 class="text-lg font-semibold text-gray-800">Campanhas Recentes</h2>
+            </div>
+            <div class="divide-y divide-gray-100 max-h-96 overflow-y-auto">
+                {% for campanha in campanhas %}
+                <a href="{% url 'disparo:detalhe_campanha' campanha.id %}" class="block p-4 hover:bg-gray-50 transition">
+                    <div class="flex justify-between items-center">
+                        <div>
+                            <h3 class="font-medium text-gray-800">{{ campanha.nome }}</h3>
+                            <p class="text-sm text-gray-500">
+                                {{ campanha.enviados }}/{{ campanha.total_contatos }} enviados
+                            </p>
+                        </div>
+                        <span class="px-3 py-1 rounded-full text-xs font-medium
+                            {% if campanha.status == 'concluida' %}bg-green-100 text-green-700
+                            {% elif campanha.status == 'em_andamento' %}bg-blue-100 text-blue-700
+                            {% elif campanha.status == 'pausada' %}bg-yellow-100 text-yellow-700
+                            {% else %}bg-gray-100 text-gray-700{% endif %}">
+                            {{ campanha.get_status_display }}
+                        </span>
+                    </div>
+                </a>
+                {% empty %}
+                <div class="p-8 text-center text-gray-500">
+                    <p>Nenhuma campanha criada ainda.</p>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

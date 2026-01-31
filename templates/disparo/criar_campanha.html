@@ -1,0 +1,226 @@
+{% extends 'base.html' %}
+
+{% block title %}Nova Campanha - Busca Clientes{% endblock %}
+
+{% block content %}
+<div class="max-w-3xl mx-auto space-y-6">
+    <!-- Header -->
+    <div class="flex items-center justify-between">
+        <div>
+            <h1 class="text-2xl font-bold text-gray-800">Nova Campanha de Disparo</h1>
+            <p class="text-gray-600">Configure sua campanha de mensagens</p>
+        </div>
+        <a href="{% url 'disparo:dashboard' %}" class="text-gray-500 hover:text-gray-700">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+            </svg>
+        </a>
+    </div>
+
+    {% if not instancias %}
+    <!-- Alerta: Sem conexão -->
+    <div class="bg-red-50 border border-red-200 rounded-xl p-6 text-center">
+        <svg class="w-12 h-12 text-red-400 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path>
+        </svg>
+        <h3 class="text-lg font-semibold text-red-800 mb-2">WhatsApp não conectado</h3>
+        <p class="text-red-600 mb-4">Você precisa conectar o WhatsApp antes de criar uma campanha.</p>
+        <a href="{% url 'disparo:conectar' %}" class="inline-block bg-red-600 hover:bg-red-700 text-white px-6 py-2 rounded-lg font-medium transition">
+            Conectar WhatsApp
+        </a>
+    </div>
+    {% elif not listas %}
+    <!-- Alerta: Sem listas -->
+    <div class="bg-amber-50 border border-amber-200 rounded-xl p-6 text-center">
+        <svg class="w-12 h-12 text-amber-400 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"></path>
+        </svg>
+        <h3 class="text-lg font-semibold text-amber-800 mb-2">Nenhuma lista disponível</h3>
+        <p class="text-amber-600 mb-4">Você precisa fazer uma busca de clientes antes de criar uma campanha.</p>
+        <a href="{% url 'buscar_clientes' %}" class="inline-block bg-amber-600 hover:bg-amber-700 text-white px-6 py-2 rounded-lg font-medium transition">
+            Buscar Clientes
+        </a>
+    </div>
+    {% else %}
+    <!-- Formulário -->
+    <form method="post" class="space-y-6">
+        {% csrf_token %}
+
+        <!-- Nome da Campanha -->
+        <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+            <label class="block text-sm font-medium text-gray-700 mb-2">Nome da Campanha</label>
+            <input type="text" name="nome" required placeholder="ex: Promoção Janeiro 2026"
+                   class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+        </div>
+
+        <!-- Seleção de WhatsApp -->
+        <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+            <label class="block text-sm font-medium text-gray-700 mb-2">WhatsApp Conectado</label>
+            <select name="instancia" required class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                {% for instancia in instancias %}
+                <option value="{{ instancia.id }}">{{ instancia.nome }} {% if instancia.numero_conectado %}({{ instancia.numero_conectado }}){% endif %}</option>
+                {% endfor %}
+            </select>
+        </div>
+
+        <!-- Seleção de Lista -->
+        <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+            <label class="block text-sm font-medium text-gray-700 mb-2">Lista de Clientes</label>
+            <select name="lista" id="selectLista" required class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                <option value="">Selecione uma lista...</option>
+                {% for lista in listas %}
+                <option value="{{ lista.id }}" data-contatos="{{ lista.total_resultados }}">
+                    {{ lista.termo_busca }} - {{ lista.total_resultados }} contatos ({{ lista.data_busca|date:"d/m/Y" }})
+                </option>
+                {% endfor %}
+            </select>
+            <p id="infoContatos" class="mt-2 text-sm text-gray-500 hidden">
+                <span id="numContatos"></span> contatos serão incluídos nesta campanha
+            </p>
+        </div>
+
+        <!-- Mensagem -->
+        <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+            <label class="block text-sm font-medium text-gray-700 mb-2">Mensagem</label>
+            <textarea name="mensagem" id="mensagem" rows="6" required placeholder="Digite sua mensagem aqui...
+
+Dica: Use {nome} para inserir o nome do cliente automaticamente."
+                      class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"></textarea>
+
+            <!-- Contador de caracteres -->
+            <div class="flex justify-between items-center mt-2">
+                <span class="text-sm text-gray-500">
+                    <span id="charCount">0</span> caracteres
+                </span>
+                <div class="flex space-x-2">
+                    <button type="button" onclick="inserirVariavel('{nome}')" class="text-xs bg-gray-100 hover:bg-gray-200 px-2 py-1 rounded">
+                        + Nome
+                    </button>
+                </div>
+            </div>
+
+            <!-- Checkbox usar nome -->
+            <div class="mt-4 flex items-center">
+                <input type="checkbox" name="usar_nome" id="usar_nome" checked
+                       class="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500">
+                <label for="usar_nome" class="ml-2 text-sm text-gray-700">
+                    Chamar cliente pelo nome (personalização)
+                </label>
+            </div>
+        </div>
+
+        <!-- Preview da Mensagem -->
+        <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+            <h3 class="text-sm font-medium text-gray-700 mb-3">Preview da Mensagem</h3>
+            <div class="bg-green-50 border border-green-200 rounded-xl p-4">
+                <div class="flex items-start space-x-3">
+                    <div class="bg-green-500 text-white w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold">
+                        J
+                    </div>
+                    <div class="flex-1">
+                        <p class="text-xs text-gray-500 mb-1">João Silva</p>
+                        <div class="bg-white rounded-lg p-3 shadow-sm">
+                            <p id="previewMensagem" class="text-gray-800 text-sm whitespace-pre-wrap">
+                                A mensagem aparecerá aqui...
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Dicas Anti-Bloqueio -->
+        <div class="bg-amber-50 border border-amber-200 rounded-xl p-4">
+            <h3 class="font-semibold text-amber-800 mb-2 flex items-center">
+                <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"></path>
+                </svg>
+                Dicas para evitar bloqueio
+            </h3>
+            <ul class="text-sm text-amber-700 space-y-1 list-disc list-inside">
+                <li>Personalize a mensagem chamando o cliente pelo nome</li>
+                <li>Evite textos muito comerciais ou com muitos links</li>
+                <li>Não use apenas letras maiúsculas</li>
+                <li>Varie o texto entre campanhas diferentes</li>
+                <li>Comece com poucos envios e aumente gradualmente</li>
+            </ul>
+        </div>
+
+        <!-- Botões -->
+        <div class="flex space-x-4">
+            <a href="{% url 'disparo:dashboard' %}" class="flex-1 bg-gray-100 hover:bg-gray-200 text-gray-700 py-3 rounded-lg font-medium text-center transition">
+                Cancelar
+            </a>
+            <button type="submit" class="flex-1 bg-blue-600 hover:bg-blue-700 text-white py-3 rounded-lg font-medium transition flex items-center justify-center">
+                <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"></path>
+                </svg>
+                Criar Campanha
+            </button>
+        </div>
+    </form>
+    {% endif %}
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Atualizar contador de caracteres e preview
+document.getElementById('mensagem').addEventListener('input', function() {
+    const texto = this.value;
+    document.getElementById('charCount').textContent = texto.length;
+    atualizarPreview();
+});
+
+// Atualizar info de contatos
+document.getElementById('selectLista').addEventListener('change', function() {
+    const option = this.options[this.selectedIndex];
+    const contatos = option.dataset.contatos;
+    if (contatos) {
+        document.getElementById('numContatos').textContent = contatos;
+        document.getElementById('infoContatos').classList.remove('hidden');
+    } else {
+        document.getElementById('infoContatos').classList.add('hidden');
+    }
+});
+
+// Checkbox usar nome
+document.getElementById('usar_nome').addEventListener('change', atualizarPreview);
+
+// Inserir variável
+function inserirVariavel(variavel) {
+    const textarea = document.getElementById('mensagem');
+    const start = textarea.selectionStart;
+    const end = textarea.selectionEnd;
+    const text = textarea.value;
+    textarea.value = text.substring(0, start) + variavel + text.substring(end);
+    textarea.focus();
+    textarea.selectionStart = textarea.selectionEnd = start + variavel.length;
+    document.getElementById('charCount').textContent = textarea.value.length;
+    atualizarPreview();
+}
+
+// Atualizar preview
+function atualizarPreview() {
+    let mensagem = document.getElementById('mensagem').value;
+    const usarNome = document.getElementById('usar_nome').checked;
+
+    if (usarNome) {
+        mensagem = mensagem.replace(/{nome}/gi, 'João');
+        if (!mensagem.includes('João') && mensagem.trim()) {
+            mensagem = 'Olá João! ' + mensagem;
+        }
+    }
+
+    document.getElementById('previewMensagem').textContent = mensagem || 'A mensagem aparecerá aqui...';
+}
+
+// URL params
+const urlParams = new URLSearchParams(window.location.search);
+const listaId = urlParams.get('lista');
+if (listaId) {
+    document.getElementById('selectLista').value = listaId;
+    document.getElementById('selectLista').dispatchEvent(new Event('change'));
+}
+</script>
+{% endblock %}

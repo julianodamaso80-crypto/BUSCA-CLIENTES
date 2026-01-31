@@ -1,0 +1,240 @@
+{% extends 'base.html' %}
+
+{% block title %}Buscar Clientes - Busca Clientes{% endblock %}
+
+{% block content %}
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+    <!-- Formulário de Busca -->
+    <div class="lg:col-span-2">
+        <div class="bg-white rounded-2xl shadow-lg p-6 md:p-8">
+            <div class="mb-8">
+                <h1 class="text-2xl font-bold text-gray-900">Buscar Clientes</h1>
+                <p class="text-gray-600 mt-1">Encontre clientes no Google Maps ou LinkedIn</p>
+            </div>
+
+            <form method="post" id="formBusca" class="space-y-6">
+                {% csrf_token %}
+
+                <!-- Fonte de Busca -->
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-3">Fonte de Busca</label>
+                    <div class="flex flex-wrap gap-4">
+                        <label class="flex items-center p-4 border-2 border-gray-200 rounded-xl cursor-pointer hover:border-blue-500 transition has-[:checked]:border-blue-500 has-[:checked]:bg-blue-50">
+                            <input type="radio" name="fonte" value="google_maps" checked class="w-4 h-4 text-blue-600">
+                            <div class="ml-3">
+                                <span class="block font-medium text-gray-900">Google Maps</span>
+                                <span class="block text-sm text-gray-500">Empresas e estabelecimentos</span>
+                            </div>
+                        </label>
+                        <label class="flex items-center p-4 border-2 border-gray-200 rounded-xl cursor-pointer hover:border-blue-500 transition has-[:checked]:border-blue-500 has-[:checked]:bg-blue-50 opacity-50">
+                            <input type="radio" name="fonte" value="linkedin" class="w-4 h-4 text-blue-600" disabled>
+                            <div class="ml-3">
+                                <span class="block font-medium text-gray-900">LinkedIn</span>
+                                <span class="block text-sm text-gray-500">Em breve</span>
+                            </div>
+                        </label>
+                    </div>
+                </div>
+
+                <!-- Termo de Busca -->
+                <div>
+                    <label for="termo_busca" class="block text-sm font-medium text-gray-700 mb-2">
+                        O que você quer buscar? *
+                    </label>
+                    <input
+                        type="text"
+                        id="termo_busca"
+                        name="termo_busca"
+                        required
+                        class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition"
+                        placeholder="Ex: Restaurantes, Dentistas, Advogados, Imobiliárias..."
+                    >
+                </div>
+
+                <!-- Estado e Cidade -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <label for="estado" class="block text-sm font-medium text-gray-700 mb-2">
+                            Estado *
+                        </label>
+                        <select
+                            id="estado"
+                            name="estado"
+                            required
+                            class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition bg-white"
+                        >
+                            <option value="">Selecione o estado</option>
+                            {% for estado in estados %}
+                                <option value="{{ estado.id }}">{{ estado.nome }} ({{ estado.sigla }})</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <div>
+                        <label for="cidade" class="block text-sm font-medium text-gray-700 mb-2">
+                            Cidade *
+                        </label>
+                        <select
+                            id="cidade"
+                            name="cidade"
+                            required
+                            disabled
+                            class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition bg-white disabled:bg-gray-100 disabled:cursor-not-allowed"
+                        >
+                            <option value="">Primeiro selecione o estado</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Filtros -->
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-3">Filtros de Resultado</label>
+                    <div class="bg-gray-50 rounded-xl p-4">
+                        <p class="text-sm text-gray-600 mb-4">Mostrar apenas clientes com:</p>
+                        <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                            <label class="flex items-center p-3 bg-white rounded-lg border border-gray-200 cursor-pointer hover:border-green-500 transition has-[:checked]:border-green-500 has-[:checked]:bg-green-50">
+                                <input type="checkbox" name="apenas_whatsapp" value="1" class="w-4 h-4 text-green-600 rounded">
+                                <div class="ml-3">
+                                    <span class="block font-medium text-gray-900 text-sm">WhatsApp</span>
+                                </div>
+                            </label>
+
+                            <label class="flex items-center p-3 bg-white rounded-lg border border-gray-200 cursor-pointer hover:border-blue-500 transition has-[:checked]:border-blue-500 has-[:checked]:bg-blue-50">
+                                <input type="checkbox" name="apenas_email" value="1" class="w-4 h-4 text-blue-600 rounded">
+                                <div class="ml-3">
+                                    <span class="block font-medium text-gray-900 text-sm">Email</span>
+                                </div>
+                            </label>
+
+                            <label class="flex items-center p-3 bg-white rounded-lg border border-gray-200 cursor-pointer hover:border-purple-500 transition has-[:checked]:border-purple-500 has-[:checked]:bg-purple-50">
+                                <input type="checkbox" name="apenas_endereco" value="1" class="w-4 h-4 text-purple-600 rounded">
+                                <div class="ml-3">
+                                    <span class="block font-medium text-gray-900 text-sm">Endereço</span>
+                                </div>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Botão de Busca -->
+                <div class="pt-4">
+                    <button
+                        type="submit"
+                        id="btnBuscar"
+                        class="w-full bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-semibold py-4 px-6 rounded-xl transition duration-200 transform hover:scale-[1.02] flex items-center justify-center space-x-2 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
+                    >
+                        <svg id="iconBuscar" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+                        </svg>
+                        <svg id="iconLoading" class="w-5 h-5 animate-spin hidden" fill="none" viewBox="0 0 24 24">
+                            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                        </svg>
+                        <span id="textoBuscar">Buscar Clientes</span>
+                    </button>
+                </div>
+            </form>
+        </div>
+
+        <!-- Info Box -->
+        <div class="mt-6 bg-blue-50 border border-blue-200 rounded-xl p-4">
+            <div class="flex">
+                <div class="flex-shrink-0">
+                    <svg class="h-5 w-5 text-blue-400" fill="currentColor" viewBox="0 0 20 20">
+                        <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"></path>
+                    </svg>
+                </div>
+                <div class="ml-3">
+                    <p class="text-sm text-blue-700">
+                        A busca utiliza a API do Apify para coletar dados do Google Maps.
+                        O processo pode levar alguns minutos dependendo da quantidade de resultados.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Sidebar - Últimas Buscas -->
+    <div class="lg:col-span-1">
+        <div class="bg-white rounded-2xl shadow-lg p-6">
+            <h2 class="text-lg font-bold text-gray-900 mb-4">Últimas Buscas</h2>
+
+            {% if ultimas_buscas %}
+                <div class="space-y-3">
+                    {% for busca in ultimas_buscas %}
+                        <a href="{% url 'resultados_busca' busca.id %}" class="block p-4 bg-gray-50 rounded-xl hover:bg-gray-100 transition">
+                            <div class="flex items-center justify-between">
+                                <div class="flex-1 min-w-0">
+                                    <p class="text-sm font-medium text-gray-900 truncate">{{ busca.termo_busca }}</p>
+                                    <p class="text-xs text-gray-500">
+                                        {% if busca.cidade %}{{ busca.cidade.nome }}/{{ busca.estado.sigla }}{% else %}Brasil{% endif %}
+                                    </p>
+                                </div>
+                                <div class="ml-4 flex-shrink-0">
+                                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                                        {{ busca.total_resultados }}
+                                    </span>
+                                </div>
+                            </div>
+                            <p class="text-xs text-gray-400 mt-2">{{ busca.data_busca|date:"d/m/Y H:i" }}</p>
+                        </a>
+                    {% endfor %}
+                </div>
+                <a href="{% url 'historico_buscas' %}" class="block text-center text-sm text-blue-600 hover:text-blue-800 mt-4">
+                    Ver todas as buscas
+                </a>
+            {% else %}
+                <p class="text-sm text-gray-500 text-center py-4">Nenhuma busca realizada ainda</p>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Carrega cidades ao selecionar estado
+document.getElementById('estado').addEventListener('change', function() {
+    const estadoId = this.value;
+    const cidadeSelect = document.getElementById('cidade');
+
+    if (estadoId) {
+        cidadeSelect.disabled = true;
+        cidadeSelect.innerHTML = '<option value="">Carregando cidades...</option>';
+
+        fetch(`/dashboard/get-cidades/?estado_id=${estadoId}`)
+            .then(response => response.json())
+            .then(cidades => {
+                cidadeSelect.innerHTML = '<option value="">Selecione a cidade</option>';
+                cidades.forEach(cidade => {
+                    const option = document.createElement('option');
+                    option.value = cidade.id;
+                    option.textContent = cidade.nome;
+                    cidadeSelect.appendChild(option);
+                });
+                cidadeSelect.disabled = false;
+            })
+            .catch(error => {
+                console.error('Erro ao carregar cidades:', error);
+                cidadeSelect.innerHTML = '<option value="">Erro ao carregar cidades</option>';
+            });
+    } else {
+        cidadeSelect.disabled = true;
+        cidadeSelect.innerHTML = '<option value="">Primeiro selecione o estado</option>';
+    }
+});
+
+// Loading no submit
+document.getElementById('formBusca').addEventListener('submit', function() {
+    const btn = document.getElementById('btnBuscar');
+    const iconBuscar = document.getElementById('iconBuscar');
+    const iconLoading = document.getElementById('iconLoading');
+    const texto = document.getElementById('textoBuscar');
+
+    btn.disabled = true;
+    iconBuscar.classList.add('hidden');
+    iconLoading.classList.remove('hidden');
+    texto.textContent = 'Buscando clientes... Aguarde';
+});
+</script>
+{% endblock %}

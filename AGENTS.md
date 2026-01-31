@@ -33,7 +33,42 @@ A SaaS platform for client search/management.
 3.  **Verify**: Ensure server runs (`python manage.py runserver`).
 4.  **Document**: Update `walkthrough.md`.
 
-## 5. Directory Structure
+## 5. WhatsApp Integration (Evolution API)
+
+O sistema de disparo de mensagens usa a **Evolution API** (baseada em Baileys).
+
+### Como iniciar a Evolution API:
+
+```bash
+# Com Docker Compose (recomendado)
+docker-compose up -d
+
+# Ou com Docker diretamente
+docker run -d \
+  --name evolution_api \
+  -p 8080:8080 \
+  -e AUTHENTICATION_API_KEY=sua-chave-api-aqui \
+  atendai/evolution-api:latest
+```
+
+### Configuração no Django:
+
+Edite `core/settings.py`:
+```python
+EVOLUTION_API_URL = 'http://localhost:8080'
+EVOLUTION_API_KEY = 'sua-chave-api-aqui'  # Mesma chave do Docker
+```
+
+### Proteções Anti-Bloqueio Implementadas:
+
+1. **Limites por idade do número** (40-500 msg/dia)
+2. **Delay aleatório** entre mensagens (15-60s)
+3. **Pausas periódicas** a cada X mensagens
+4. **Horário de envio** configurável
+5. **Lista de bloqueados** automática
+6. **Personalização** com nome do cliente
+
+## 6. Directory Structure
 ```
 /
 ├── config/             # Django Standard Project Config

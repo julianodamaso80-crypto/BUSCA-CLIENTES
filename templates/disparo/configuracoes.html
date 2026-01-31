@@ -1,0 +1,210 @@
+{% extends 'base.html' %}
+
+{% block title %}Configurações de Disparo - Busca Clientes{% endblock %}
+
+{% block content %}
+<div class="max-w-3xl mx-auto space-y-6">
+    <!-- Header -->
+    <div class="flex items-center justify-between">
+        <div>
+            <h1 class="text-2xl font-bold text-gray-800">Configurações Anti-Bloqueio</h1>
+            <p class="text-gray-600">Ajuste as configurações para proteger sua conta</p>
+        </div>
+        <a href="{% url 'disparo:dashboard' %}" class="text-gray-500 hover:text-gray-700">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+            </svg>
+        </a>
+    </div>
+
+    <!-- Alerta Informativo -->
+    <div class="bg-blue-50 border border-blue-200 rounded-xl p-4">
+        <div class="flex items-start">
+            <svg class="w-6 h-6 text-blue-600 mr-3 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+            </svg>
+            <div>
+                <h3 class="font-semibold text-blue-800">Por que essas configurações são importantes?</h3>
+                <p class="text-blue-700 text-sm mt-1">
+                    O WhatsApp monitora padrões de envio suspeitos. Estas configurações simulam um comportamento humano natural,
+                    reduzindo significativamente o risco de bloqueio da sua conta.
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <form method="post" class="space-y-6">
+        {% csrf_token %}
+
+        <!-- Idade do Número -->
+        <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+            <h3 class="text-lg font-semibold text-gray-800 mb-4">Idade do Número</h3>
+            <p class="text-gray-600 text-sm mb-4">
+                Números mais antigos podem enviar mais mensagens com segurança. Selecione a idade do seu número:
+            </p>
+
+            <div class="space-y-3">
+                {% for value, label in config.IDADE_NUMERO_CHOICES %}
+                <label class="flex items-center p-4 border rounded-lg cursor-pointer hover:bg-gray-50 transition {% if config.idade_numero == value %}border-blue-500 bg-blue-50{% else %}border-gray-200{% endif %}">
+                    <input type="radio" name="idade_numero" value="{{ value }}" {% if config.idade_numero == value %}checked{% endif %}
+                           class="w-4 h-4 text-blue-600 border-gray-300 focus:ring-blue-500">
+                    <span class="ml-3 text-gray-700">{{ label }}</span>
+                </label>
+                {% endfor %}
+            </div>
+        </div>
+
+        <!-- Limite Diário -->
+        <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+            <h3 class="text-lg font-semibold text-gray-800 mb-4">Limite Diário de Mensagens</h3>
+            <p class="text-gray-600 text-sm mb-4">
+                Defina o máximo de mensagens que podem ser enviadas por dia. Recomendado: respeite o limite sugerido pela idade do número.
+            </p>
+
+            <div class="flex items-center space-x-4">
+                <input type="number" name="limite_diario" value="{{ config.limite_diario }}" min="10" max="500"
+                       class="w-32 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                <span class="text-gray-500">mensagens/dia</span>
+            </div>
+
+            <div class="mt-3 p-3 bg-amber-50 border border-amber-200 rounded-lg">
+                <p class="text-amber-700 text-sm">
+                    <strong>Atenção:</strong> Ultrapassar o limite recomendado aumenta significativamente o risco de bloqueio.
+                </p>
+            </div>
+        </div>
+
+        <!-- Intervalos entre Mensagens -->
+        <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+            <h3 class="text-lg font-semibold text-gray-800 mb-4">Intervalo entre Mensagens</h3>
+            <p class="text-gray-600 text-sm mb-4">
+                Define o tempo de espera entre cada mensagem enviada. Um intervalo aleatório simula melhor o comportamento humano.
+            </p>
+
+            <div class="grid grid-cols-2 gap-4">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Delay Mínimo</label>
+                    <div class="flex items-center space-x-2">
+                        <input type="number" name="delay_minimo" value="{{ config.delay_minimo }}" min="10" max="120"
+                               class="w-24 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                        <span class="text-gray-500">segundos</span>
+                    </div>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Delay Máximo</label>
+                    <div class="flex items-center space-x-2">
+                        <input type="number" name="delay_maximo" value="{{ config.delay_maximo }}" min="15" max="180"
+                               class="w-24 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                        <span class="text-gray-500">segundos</span>
+                    </div>
+                </div>
+            </div>
+
+            <p class="mt-3 text-sm text-gray-500">
+                Recomendado: 15-60 segundos. Valores maiores são mais seguros.
+            </p>
+        </div>
+
+        <!-- Pausas Longas -->
+        <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+            <h3 class="text-lg font-semibold text-gray-800 mb-4">Pausas Periódicas</h3>
+            <p class="text-gray-600 text-sm mb-4">
+                Além do delay entre mensagens, faça pausas maiores periodicamente para simular um padrão mais natural.
+            </p>
+
+            <div class="grid grid-cols-2 gap-4">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Pausar após</label>
+                    <div class="flex items-center space-x-2">
+                        <input type="number" name="pausa_apos_mensagens" value="{{ config.pausa_apos_mensagens }}" min="5" max="50"
+                               class="w-24 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                        <span class="text-gray-500">mensagens</span>
+                    </div>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Duração da pausa</label>
+                    <div class="flex items-center space-x-2">
+                        <input type="number" name="duracao_pausa" value="{{ config.duracao_pausa }}" min="60" max="900"
+                               class="w-24 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                        <span class="text-gray-500">segundos</span>
+                    </div>
+                </div>
+            </div>
+
+            <p class="mt-3 text-sm text-gray-500">
+                Exemplo: Pausar 5 minutos (300s) a cada 20 mensagens enviadas.
+            </p>
+        </div>
+
+        <!-- Horário de Envio -->
+        <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+            <h3 class="text-lg font-semibold text-gray-800 mb-4">Horário de Envio</h3>
+            <p class="text-gray-600 text-sm mb-4">
+                Defina o horário permitido para envio de mensagens. Evite horários muito cedo ou muito tarde.
+            </p>
+
+            <div class="grid grid-cols-2 gap-4">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Início</label>
+                    <input type="time" name="horario_inicio" value="{{ config.horario_inicio|time:'H:i' }}"
+                           class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Fim</label>
+                    <input type="time" name="horario_fim" value="{{ config.horario_fim|time:'H:i' }}"
+                           class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                </div>
+            </div>
+
+            <div class="mt-4">
+                <label class="flex items-center">
+                    <input type="checkbox" name="enviar_apenas_dias_uteis" {% if config.enviar_apenas_dias_uteis %}checked{% endif %}
+                           class="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500">
+                    <span class="ml-2 text-gray-700">Enviar apenas em dias úteis (segunda a sexta)</span>
+                </label>
+            </div>
+        </div>
+
+        <!-- Tentativas -->
+        <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+            <h3 class="text-lg font-semibold text-gray-800 mb-4">Outras Configurações</h3>
+
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">Máximo de tentativas por contato</label>
+                <div class="flex items-center space-x-2">
+                    <input type="number" name="max_tentativas_por_contato" value="{{ config.max_tentativas_por_contato }}" min="1" max="5"
+                           class="w-24 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                    <span class="text-gray-500">tentativas</span>
+                </div>
+                <p class="mt-1 text-sm text-gray-500">
+                    Após este número de falhas, o contato será marcado como inválido.
+                </p>
+            </div>
+        </div>
+
+        <!-- Resumo das Configurações -->
+        <div class="bg-green-50 border border-green-200 rounded-xl p-6">
+            <h3 class="font-semibold text-green-800 mb-3 flex items-center">
+                <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                </svg>
+                Sua Configuração de Proteção
+            </h3>
+            <ul class="text-sm text-green-700 space-y-1">
+                <li>Limite diário: <strong>{{ config.limite_diario }}</strong> mensagens</li>
+                <li>Intervalo: <strong>{{ config.delay_minimo }}-{{ config.delay_maximo }}s</strong> entre mensagens</li>
+                <li>Pausa de <strong>{{ config.duracao_pausa }}s</strong> a cada <strong>{{ config.pausa_apos_mensagens }}</strong> mensagens</li>
+                <li>Horário: <strong>{{ config.horario_inicio|time:'H:i' }} - {{ config.horario_fim|time:'H:i' }}</strong></li>
+            </ul>
+        </div>
+
+        <!-- Botão Salvar -->
+        <button type="submit" class="w-full bg-blue-600 hover:bg-blue-700 text-white py-3 rounded-lg font-medium transition flex items-center justify-center">
+            <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+            </svg>
+            Salvar Configurações
+        </button>
+    </form>
+</div>
+{% endblock %}

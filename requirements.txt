@@ -1,7 +1,14 @@
+apify_client==2.4.1
+apify_shared==2.2.0
 asgiref==3.11.0
+colorama==0.4.6
 Django==6.0.1
 django-browser-reload==1.21.0
 django-tailwind==4.4.2
+impit==0.9.3
+more-itertools==10.8.0
 pytailwindcss==0.3.0
+python-dotenv==1.2.1
+requests==2.32.5
 sqlparse==0.5.5
 tzdata==2025.3
