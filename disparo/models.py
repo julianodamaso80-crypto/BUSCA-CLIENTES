@@ -95,7 +95,7 @@ class CampanhaDisparo(models.Model):
 
     usuario = models.ForeignKey(User, on_delete=models.CASCADE, related_name='campanhas')
     instancia = models.ForeignKey(InstanciaWhatsApp, on_delete=models.CASCADE, related_name='campanhas')
-    busca = models.ForeignKey(BuscaCliente, on_delete=models.CASCADE, related_name='campanhas', verbose_name='Lista de Clientes')
+    busca = models.ForeignKey(BuscaCliente, on_delete=models.CASCADE, related_name='campanhas', verbose_name='Lista de Clientes', blank=True, null=True)
 
     nome = models.CharField(max_length=200, verbose_name='Nome da Campanha')
     mensagem = models.TextField(verbose_name='Mensagem')

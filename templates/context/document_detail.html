@@ -1,0 +1,107 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ document.title }} - Document{% endblock %}
+
+{% block content %}
+<div class="container mx-auto px-4 py-8">
+    {% if document %}
+    <!-- Header -->
+    <div class="flex justify-between items-start mb-8">
+        <div>
+            <a href="{% url 'context:documents' %}" class="text-blue-600 hover:underline text-sm mb-2 inline-block">&larr; Back to Documents</a>
+            <h1 class="text-3xl font-bold text-gray-800">{{ document.title }}</h1>
+            <p class="text-gray-500 mt-1">{{ document.path }}</p>
+        </div>
+        <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-blue-100 text-blue-800 capitalize">
+            {{ document.domain }}
+        </span>
+    </div>
+
+    <!-- Stats -->
+    <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+        <div class="bg-white rounded-lg shadow p-4">
+            <p class="text-2xl font-bold text-blue-600">{{ document.chunk_count }}</p>
+            <p class="text-gray-500 text-sm">Chunks</p>
+        </div>
+        <div class="bg-white rounded-lg shadow p-4">
+            <p class="text-2xl font-bold text-green-600">{{ document.word_count }}</p>
+            <p class="text-gray-500 text-sm">Words</p>
+        </div>
+        <div class="bg-white rounded-lg shadow p-4">
+            <p class="text-2xl font-bold text-purple-600">v{{ document.version }}</p>
+            <p class="text-gray-500 text-sm">Version</p>
+        </div>
+        <div class="bg-white rounded-lg shadow p-4">
+            <p class="text-sm font-medium text-gray-900">{{ document.updated_at|date:"d/m/Y H:i" }}</p>
+            <p class="text-gray-500 text-sm">Last Updated</p>
+        </div>
+    </div>
+
+    <!-- Description -->
+    {% if document.description %}
+    <div class="bg-white rounded-lg shadow p-6 mb-8">
+        <h2 class="text-lg font-semibold text-gray-800 mb-2">Description</h2>
+        <p class="text-gray-600">{{ document.description }}</p>
+    </div>
+    {% endif %}
+
+    <!-- Chunks -->
+    <div class="bg-white rounded-lg shadow">
+        <div class="p-6 border-b border-gray-200">
+            <h2 class="text-lg font-semibold text-gray-800">Chunks</h2>
+        </div>
+        <div class="divide-y divide-gray-200">
+            {% for chunk in chunks %}
+            <div class="p-6">
+                <div class="flex justify-between items-start mb-2">
+                    <div class="flex items-center gap-2">
+                        <span class="text-sm font-medium text-gray-400">#{{ chunk.chunk_index }}</span>
+                        <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium
+                            {% if chunk.chunk_type == 'section' %}bg-blue-100 text-blue-800
+                            {% elif chunk.chunk_type == 'code' %}bg-gray-800 text-gray-100
+                            {% elif chunk.chunk_type == 'list' %}bg-green-100 text-green-800
+                            {% elif chunk.chunk_type == 'table' %}bg-purple-100 text-purple-800
+                            {% else %}bg-gray-100 text-gray-800{% endif %}">
+                            {{ chunk.chunk_type }}
+                        </span>
+                        {% if chunk.section %}
+                        <span class="text-sm text-gray-500">{{ chunk.section }}</span>
+                        {% endif %}
+                    </div>
+                    <span class="text-xs text-gray-400">Lines {{ chunk.line_start }}-{{ chunk.line_end }}</span>
+                </div>
+
+                <div class="{% if chunk.chunk_type == 'code' %}bg-gray-900 text-gray-100 font-mono{% else %}bg-gray-50{% endif %} p-4 rounded text-sm whitespace-pre-wrap">{{ chunk.content }}</div>
+
+                {% if chunk.keywords %}
+                <div class="mt-2 flex flex-wrap gap-1">
+                    {% for keyword in chunk.keywords %}
+                    <span class="inline-flex items-center px-2 py-0.5 rounded text-xs bg-gray-200 text-gray-600">
+                        {{ keyword }}
+                    </span>
+                    {% endfor %}
+                </div>
+                {% endif %}
+            </div>
+            {% empty %}
+            <div class="p-12 text-center text-gray-500">
+                No chunks found for this document.
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+
+    {% else %}
+    <div class="bg-red-50 border border-red-200 rounded-lg p-12 text-center">
+        <svg class="w-16 h-16 mx-auto text-red-400 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path>
+        </svg>
+        <h3 class="text-lg font-medium text-red-800 mb-2">Document not found</h3>
+        <p class="text-red-600">{{ error }}</p>
+        <a href="{% url 'context:documents' %}" class="mt-4 inline-block text-blue-600 hover:underline">
+            &larr; Back to Documents
+        </a>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

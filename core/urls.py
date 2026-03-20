@@ -25,6 +25,8 @@ urlpatterns = [
     # Apps
     path('dashboard/', include('clientes.urls')),
     path('disparo/', include('disparo.urls')),
+    path('aquecimento/', include('aquecimento.urls')),
+    # path('context/', include('context.urls')),  # TODO: instalar dependências do context app
 
     # Admin
     path('admin/', admin.site.urls),

@@ -58,6 +58,18 @@ class EvolutionAPIService:
         except requests.exceptions.RequestException as e:
             return {'success': False, 'error': str(e)}
 
+    def obter_info_instancia(self, nome_instancia):
+        """Obtém informações completas da instância (incluindo número conectado)"""
+        url = f"{self.base_url}/instance/fetchInstances?instanceName={nome_instancia}"
+
+        try:
+            response = requests.get(url, headers=self.headers)
+            response.raise_for_status()
+            data = response.json()
+            return {'success': True, 'data': data}
+        except requests.exceptions.RequestException as e:
+            return {'success': False, 'error': str(e)}
+
     def desconectar(self, nome_instancia):
         """Desconecta a instância do WhatsApp"""
         url = f"{self.base_url}/instance/logout/{nome_instancia}"

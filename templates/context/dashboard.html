@@ -1,0 +1,179 @@
+{% extends 'base.html' %}
+
+{% block title %}Context Dashboard{% endblock %}
+
+{% block content %}
+<div class="container mx-auto px-4 py-8">
+    <h1 class="text-3xl font-bold text-gray-800 mb-8">Context System Dashboard</h1>
+
+    <!-- Stats Cards -->
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+        <!-- Documents -->
+        <div class="bg-white rounded-lg shadow p-6">
+            <div class="flex items-center">
+                <div class="p-3 rounded-full bg-blue-100 text-blue-600">
+                    <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                    </svg>
+                </div>
+                <div class="ml-4">
+                    <p class="text-sm font-medium text-gray-500">Documents</p>
+                    <p class="text-2xl font-semibold text-gray-900">{{ stats.documents.total }}</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Chunks -->
+        <div class="bg-white rounded-lg shadow p-6">
+            <div class="flex items-center">
+                <div class="p-3 rounded-full bg-green-100 text-green-600">
+                    <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 7v10c0 2.21 3.582 4 8 4s8-1.79 8-4V7M4 7c0 2.21 3.582 4 8 4s8-1.79 8-4M4 7c0-2.21 3.582-4 8-4s8 1.79 8 4"></path>
+                    </svg>
+                </div>
+                <div class="ml-4">
+                    <p class="text-sm font-medium text-gray-500">Chunks</p>
+                    <p class="text-2xl font-semibold text-gray-900">{{ stats.chunks.total }}</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tokens -->
+        <div class="bg-white rounded-lg shadow p-6">
+            <div class="flex items-center">
+                <div class="p-3 rounded-full bg-purple-100 text-purple-600">
+                    <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z"></path>
+                    </svg>
+                </div>
+                <div class="ml-4">
+                    <p class="text-sm font-medium text-gray-500">Tokens</p>
+                    <p class="text-2xl font-semibold text-gray-900">{{ stats.chunks.total_tokens|default:"0" }}</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Health Score -->
+        <div class="bg-white rounded-lg shadow p-6">
+            <div class="flex items-center">
+                <div class="p-3 rounded-full {% if recent_report.health_score >= 80 %}bg-green-100 text-green-600{% elif recent_report.health_score >= 50 %}bg-yellow-100 text-yellow-600{% else %}bg-red-100 text-red-600{% endif %}">
+                    <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                    </svg>
+                </div>
+                <div class="ml-4">
+                    <p class="text-sm font-medium text-gray-500">Health Score</p>
+                    <p class="text-2xl font-semibold text-gray-900">{{ recent_report.health_score }}/100</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Quick Actions -->
+    <div class="bg-white rounded-lg shadow mb-8">
+        <div class="p-6 border-b border-gray-200">
+            <h2 class="text-lg font-semibold text-gray-800">Quick Actions</h2>
+        </div>
+        <div class="p-6">
+            <div class="flex flex-wrap gap-4">
+                <a href="{% url 'context:query' %}" class="inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition">
+                    <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+                    </svg>
+                    Search Context
+                </a>
+                <a href="{% url 'context:documents' %}" class="inline-flex items-center px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition">
+                    <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                    </svg>
+                    View Documents
+                </a>
+                <a href="{% url 'context:coverage' %}" class="inline-flex items-center px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition">
+                    <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
+                    </svg>
+                    Coverage Report
+                </a>
+                <a href="{% url 'context:conflicts' %}" class="inline-flex items-center px-4 py-2 {% if unresolved_conflicts > 0 %}bg-red-600 hover:bg-red-700{% else %}bg-gray-400{% endif %} text-white rounded-lg transition">
+                    <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path>
+                    </svg>
+                    Conflicts ({{ unresolved_conflicts }})
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Coverage by Domain -->
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+        <div class="bg-white rounded-lg shadow">
+            <div class="p-6 border-b border-gray-200">
+                <h2 class="text-lg font-semibold text-gray-800">Coverage by Domain</h2>
+            </div>
+            <div class="p-6">
+                {% if recent_report.coverage_by_domain %}
+                    <div class="space-y-4">
+                        {% for domain, data in recent_report.coverage_by_domain.items %}
+                        <div>
+                            <div class="flex justify-between mb-1">
+                                <span class="text-sm font-medium text-gray-700 capitalize">{{ domain }}</span>
+                                <span class="text-sm text-gray-500">{{ data.documents }} docs, {{ data.chunks }} chunks</span>
+                            </div>
+                            <div class="w-full bg-gray-200 rounded-full h-2">
+                                <div class="bg-blue-600 h-2 rounded-full" style="width: {% widthratio data.chunks recent_report.total_chunks 100 %}%"></div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <p class="text-gray-500">No documents indexed yet.</p>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Activity & Info -->
+        <div class="bg-white rounded-lg shadow">
+            <div class="p-6 border-b border-gray-200">
+                <h2 class="text-lg font-semibold text-gray-800">Recent Activity</h2>
+            </div>
+            <div class="p-6">
+                <dl class="space-y-4">
+                    <div class="flex justify-between">
+                        <dt class="text-sm text-gray-500">Ingestions (7 days)</dt>
+                        <dd class="text-sm font-medium text-gray-900">{{ stats.activity.ingestions_7d }}</dd>
+                    </div>
+                    <div class="flex justify-between">
+                        <dt class="text-sm text-gray-500">Queries (7 days)</dt>
+                        <dd class="text-sm font-medium text-gray-900">{{ stats.activity.queries_7d }}</dd>
+                    </div>
+                    <div class="flex justify-between">
+                        <dt class="text-sm text-gray-500">Total Words</dt>
+                        <dd class="text-sm font-medium text-gray-900">{{ stats.documents.total_words }}</dd>
+                    </div>
+                    {% if latest_version %}
+                    <div class="flex justify-between">
+                        <dt class="text-sm text-gray-500">Latest Version</dt>
+                        <dd class="text-sm font-medium text-gray-900">{{ latest_version.tag }}</dd>
+                    </div>
+                    {% endif %}
+                </dl>
+            </div>
+        </div>
+    </div>
+
+    <!-- CLI Commands Help -->
+    <div class="bg-gray-800 rounded-lg shadow mt-8">
+        <div class="p-6 border-b border-gray-700">
+            <h2 class="text-lg font-semibold text-white">CLI Commands</h2>
+        </div>
+        <div class="p-6">
+            <div class="space-y-3 font-mono text-sm">
+                <p class="text-gray-300"><span class="text-green-400">$</span> python manage.py sync_context <span class="text-gray-500"># Sync all docs</span></p>
+                <p class="text-gray-300"><span class="text-green-400">$</span> python manage.py coverage_report <span class="text-gray-500"># Generate report</span></p>
+                <p class="text-gray-300"><span class="text-green-400">$</span> python manage.py context_query "your query" <span class="text-gray-500"># Search</span></p>
+                <p class="text-gray-300"><span class="text-green-400">$</span> python manage.py reprocess_context --reset --confirm-reset <span class="text-gray-500"># Reset all</span></p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

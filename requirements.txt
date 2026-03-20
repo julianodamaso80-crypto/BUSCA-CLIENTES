@@ -1,14 +1,48 @@
-apify_client==2.4.1
-apify_shared==2.2.0
-asgiref==3.11.0
-colorama==0.4.6
+# Django Core
 Django==6.0.1
-django-browser-reload==1.21.0
-django-tailwind==4.4.2
-impit==0.9.3
-more-itertools==10.8.0
-pytailwindcss==0.3.0
-python-dotenv==1.2.1
-requests==2.32.5
+asgiref==3.11.0
 sqlparse==0.5.5
 tzdata==2025.3
+
+# Django Extensions
+django-browser-reload==1.21.0
+django-tailwind==4.4.2
+pytailwindcss==0.3.0
+
+# API Clients
+apify_client==2.4.1
+apify_shared==2.2.0
+requests==2.32.5
+
+# Utilities
+colorama==0.4.6
+impit==0.9.3
+more-itertools==10.8.0
+python-dotenv==1.2.1
+
+# ============================================
+# CONTEXT SYSTEM - Vector Store & Embeddings
+# ============================================
+
+# Vector Store
+chromadb==0.4.24
+
+# Embeddings
+openai==1.12.0
+sentence-transformers==2.3.1
+
+# Markdown Processing
+markdown-it-py==3.0.0
+python-frontmatter==1.1.0
+
+# Text Processing
+tiktoken==0.5.2
+
+# File Watching
+watchdog==4.0.0
+
+# Data Validation
+pydantic==2.6.0
+
+# Rich Logging
+rich==13.7.0

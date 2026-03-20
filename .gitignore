@@ -41,3 +41,9 @@ Thumbs.db
 
 # Node
 node_modules/
+
+# Context System
+chroma_db/*
+!chroma_db/.gitkeep
+context_logs/*
+!context_logs/.gitkeep

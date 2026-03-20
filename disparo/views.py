@@ -3,8 +3,11 @@ from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.http import JsonResponse
 from django.views.decorators.http import require_POST, require_GET
+from django.views.decorators.csrf import csrf_exempt
 from django.utils import timezone
+from django.conf import settings
 import json
+from openai import OpenAI
 
 from .models import (
     InstanciaWhatsApp, ConfiguracaoDisparo, CampanhaDisparo,
@@ -184,50 +187,112 @@ def criar_campanha(request):
     if request.method == 'POST':
         nome = request.POST.get('nome')
         instancia_id = request.POST.get('instancia')
-        busca_id = request.POST.get('lista')
+        tipo_envio = request.POST.get('tipo_envio', 'lista')
         mensagem = request.POST.get('mensagem')
         usar_nome = request.POST.get('usar_nome') == 'on'
 
         # Validações
         instancia = get_object_or_404(InstanciaWhatsApp, id=instancia_id, usuario=request.user)
-        busca = get_object_or_404(BuscaCliente, id=busca_id, usuario=request.user)
 
-        # Criar campanha
-        campanha = CampanhaDisparo.objects.create(
-            usuario=request.user,
-            instancia=instancia,
-            busca=busca,
-            nome=nome,
-            mensagem=mensagem,
-            usar_nome_cliente=usar_nome,
-        )
-
-        # Criar logs de envio para cada contato
         disparo_service = DisparoService(request.user)
-        clientes = ClienteEncontrado.objects.filter(busca=busca)
 
-        contatos_validos = 0
-        for cliente in clientes:
-            numero = cliente.whatsapp or cliente.telefone
-            if numero and disparo_service.validar_numero(numero):
-                # Verificar se não está bloqueado
-                if not disparo_service.numero_esta_bloqueado(numero):
+        if tipo_envio == 'manual':
+            # Envio para número manual único
+            numero_manual = request.POST.get('numero_manual', '').strip()
+            nome_manual = request.POST.get('nome_manual', '').strip() or 'Cliente'
+
+            if not numero_manual:
+                messages.error(request, 'Informe o número do WhatsApp.')
+                return redirect('disparo:criar_campanha')
+
+            # Limpar número (remover caracteres não numéricos)
+            numero_limpo = ''.join(filter(str.isdigit, numero_manual))
+
+            # Adicionar código do país se não tiver
+            if not numero_limpo.startswith('55'):
+                numero_limpo = '55' + numero_limpo
+
+            # Criar campanha
+            campanha = CampanhaDisparo.objects.create(
+                usuario=request.user,
+                instancia=instancia,
+                busca=None,  # Sem busca associada
+                nome=nome,
+                mensagem=mensagem,
+                usar_nome_cliente=usar_nome,
+            )
+
+            # Criar log de envio único
+            if disparo_service.validar_numero(numero_limpo):
+                if not disparo_service.numero_esta_bloqueado(numero_limpo):
                     mensagem_personalizada = disparo_service.personalizar_mensagem(
-                        mensagem, cliente.nome, usar_nome
+                        mensagem, nome_manual, usar_nome
                     )
                     LogEnvio.objects.create(
                         campanha=campanha,
-                        nome_contato=cliente.nome,
-                        numero=numero,
+                        nome_contato=nome_manual,
+                        numero=numero_limpo,
                         mensagem_enviada=mensagem_personalizada,
                         status='pendente'
                     )
-                    contatos_validos += 1
+                    campanha.total_contatos = 1
+                    campanha.save()
+                    messages.success(request, f'Campanha criada para {nome_manual} ({numero_manual})!')
+                else:
+                    messages.warning(request, 'Número está bloqueado.')
+                    campanha.delete()
+                    return redirect('disparo:criar_campanha')
+            else:
+                messages.error(request, 'Número inválido.')
+                campanha.delete()
+                return redirect('disparo:criar_campanha')
 
-        campanha.total_contatos = contatos_validos
-        campanha.save()
+        else:
+            # Envio para lista de clientes
+            busca_id = request.POST.get('lista')
 
-        messages.success(request, f'Campanha criada com {contatos_validos} contatos!')
+            if not busca_id:
+                messages.error(request, 'Selecione uma lista de clientes.')
+                return redirect('disparo:criar_campanha')
+
+            busca = get_object_or_404(BuscaCliente, id=busca_id, usuario=request.user)
+
+            # Criar campanha
+            campanha = CampanhaDisparo.objects.create(
+                usuario=request.user,
+                instancia=instancia,
+                busca=busca,
+                nome=nome,
+                mensagem=mensagem,
+                usar_nome_cliente=usar_nome,
+            )
+
+            # Criar logs de envio para cada contato
+            clientes = ClienteEncontrado.objects.filter(busca=busca)
+
+            contatos_validos = 0
+            for cliente in clientes:
+                numero = cliente.whatsapp or cliente.telefone
+                if numero and disparo_service.validar_numero(numero):
+                    # Verificar se não está bloqueado
+                    if not disparo_service.numero_esta_bloqueado(numero):
+                        mensagem_personalizada = disparo_service.personalizar_mensagem(
+                            mensagem, cliente.nome, usar_nome
+                        )
+                        LogEnvio.objects.create(
+                            campanha=campanha,
+                            nome_contato=cliente.nome,
+                            numero=numero,
+                            mensagem_enviada=mensagem_personalizada,
+                            status='pendente'
+                        )
+                        contatos_validos += 1
+
+            campanha.total_contatos = contatos_validos
+            campanha.save()
+
+            messages.success(request, f'Campanha criada com {contatos_validos} contatos!')
+
         return redirect('disparo:detalhe_campanha', campanha_id=campanha.id)
 
     # GET - mostrar formulário
@@ -413,3 +478,227 @@ def desbloquear_contato(request, contato_id):
     contato.delete()
 
     return JsonResponse({'success': True})
+
+
+@login_required
+@require_GET
+def minha_instancia(request):
+    """Retorna ou cria a instância do usuário automaticamente"""
+    # Usar "disparo" como nome padrão (já existe na Evolution API)
+    nome_instancia = 'disparo'
+
+    # Verificar se já existe no banco local
+    instancia = InstanciaWhatsApp.objects.filter(usuario=request.user).first()
+
+    if not instancia:
+        # Registrar a instância existente da Evolution API
+        instancia = InstanciaWhatsApp.objects.create(
+            usuario=request.user,
+            nome=nome_instancia,
+            status='qr_code'
+        )
+
+    # Verificar status atual na Evolution API
+    evolution = EvolutionAPIService()
+    status_result = evolution.verificar_conexao(instancia.nome)
+    numero_conectado = None
+
+    if status_result['success']:
+        data = status_result['data']
+        state = data.get('instance', {}).get('state') or data.get('state')
+
+        if state == 'open':
+            instancia.status = 'connected'
+            instancia.ultima_conexao = timezone.now()
+
+            # Buscar informações completas da instância para obter o número
+            info_result = evolution.obter_info_instancia(instancia.nome)
+            if info_result['success'] and info_result['data']:
+                info = info_result['data'][0] if isinstance(info_result['data'], list) else info_result['data']
+                owner_jid = info.get('ownerJid', '')
+                if owner_jid:
+                    numero_conectado = owner_jid.replace('@s.whatsapp.net', '').replace('@c.us', '')
+                    instancia.numero_conectado = numero_conectado
+        elif state == 'connecting':
+            instancia.status = 'connecting'
+        elif state == 'close':
+            instancia.status = 'disconnected'
+        else:
+            instancia.status = 'qr_code'
+
+        instancia.save()
+
+    return JsonResponse({
+        'success': True,
+        'instancia_id': instancia.id,
+        'nome': instancia.nome,
+        'status': instancia.status,
+        'numero': numero_conectado or instancia.numero_conectado
+    })
+
+
+@csrf_exempt
+@require_POST
+def webhook_evolution(request):
+    """
+    Webhook para receber eventos da Evolution API
+    Eventos: messages.upsert, messages.update, connection.update, etc.
+    """
+    try:
+        data = json.loads(request.body)
+        event = data.get('event')
+        instance = data.get('instance')
+
+        # Log do evento (para debug)
+        print(f"[WEBHOOK] Evento: {event} | Instância: {instance}")
+
+        # Processar eventos de mensagem
+        if event == 'messages.upsert':
+            messages_data = data.get('data', {})
+
+            # Verificar se é uma mensagem recebida (resposta do cliente)
+            if messages_data.get('key', {}).get('fromMe') == False:
+                remote_jid = messages_data.get('key', {}).get('remoteJid', '')
+                # Extrair número do JID (formato: 5511999999999@s.whatsapp.net)
+                numero = remote_jid.replace('@s.whatsapp.net', '').replace('@c.us', '')
+
+                # Atualizar log de envio como "respondido"
+                log = LogEnvio.objects.filter(
+                    numero__endswith=numero[-8:],  # Últimos 8 dígitos
+                    status__in=['enviado', 'entregue', 'lido']
+                ).first()
+
+                if log:
+                    log.status = 'respondido'
+                    log.data_resposta = timezone.now()
+                    log.save()
+
+                    # Atualizar estatísticas da campanha
+                    log.campanha.respondidos += 1
+                    log.campanha.save()
+
+        # Processar atualização de status da mensagem
+        elif event == 'messages.update':
+            updates = data.get('data', [])
+            for update in updates if isinstance(updates, list) else [updates]:
+                message_id = update.get('key', {}).get('id')
+                status = update.get('update', {}).get('status')
+
+                # Status: 2=enviado, 3=entregue, 4=lido
+                if status == 3:  # Entregue
+                    log = LogEnvio.objects.filter(status='enviado').first()
+                    if log:
+                        log.status = 'entregue'
+                        log.data_entrega = timezone.now()
+                        log.save()
+                        log.campanha.entregues += 1
+                        log.campanha.save()
+
+                elif status == 4:  # Lido
+                    log = LogEnvio.objects.filter(status__in=['enviado', 'entregue']).first()
+                    if log:
+                        log.status = 'lido'
+                        log.data_leitura = timezone.now()
+                        log.save()
+                        log.campanha.lidos += 1
+                        log.campanha.save()
+
+        # Processar atualização de conexão
+        elif event == 'connection.update':
+            state = data.get('data', {}).get('state')
+            instance_name = data.get('instance')
+
+            instancia = InstanciaWhatsApp.objects.filter(nome=instance_name).first()
+            if instancia:
+                if state == 'open':
+                    instancia.status = 'connected'
+                    instancia.ultima_conexao = timezone.now()
+                elif state == 'close':
+                    instancia.status = 'disconnected'
+                instancia.save()
+
+        return JsonResponse({'success': True})
+
+    except Exception as e:
+        print(f"[WEBHOOK ERROR] {str(e)}")
+        return JsonResponse({'success': False, 'error': str(e)}, status=400)
+
+
+@login_required
+@require_POST
+def gerar_prompt_ia(request):
+    """
+    Gera uma versão mais profissional e organizada da mensagem usando OpenAI.
+    Mantém a intenção original do cliente, apenas reformula.
+    """
+    try:
+        data = json.loads(request.body)
+        mensagem_original = data.get('mensagem', '').strip()
+        usar_nome = data.get('usar_nome', False)
+
+        if not mensagem_original:
+            return JsonResponse({
+                'success': False,
+                'error': 'Por favor, escreva uma mensagem primeiro.'
+            })
+
+        # Verificar se a chave da API está configurada
+        api_key = settings.OPENAI_API_KEY
+        if not api_key:
+            return JsonResponse({
+                'success': False,
+                'error': 'Chave da API OpenAI não configurada.'
+            })
+
+        # Configurar cliente OpenAI
+        client = OpenAI(api_key=api_key)
+
+        # Montar o prompt do sistema
+        system_prompt = """Você é um especialista em copywriting para WhatsApp Business.
+Sua tarefa é reformular mensagens de marketing/vendas para que fiquem mais profissionais, organizadas e eficientes,
+sem alterar o objetivo ou o conteúdo principal que o cliente deseja transmitir.
+
+Regras importantes:
+1. Mantenha a mensagem curta e objetiva (ideal para WhatsApp)
+2. Use uma linguagem profissional mas amigável
+3. Evite parecer spam ou muito comercial
+4. Não use emojis em excesso (máximo 2-3)
+5. Não use CAPS LOCK
+6. Organize as informações de forma clara
+7. Mantenha o tom e a intenção original do cliente"""
+
+        # Adicionar instrução sobre personalização
+        if usar_nome:
+            system_prompt += """
+8. OBRIGATÓRIO: Inclua a variável {nome} no início da mensagem para personalização (ex: "Olá {nome}!" ou "Oi {nome},")
+9. A variável {nome} será substituída automaticamente pelo nome do cliente"""
+        else:
+            system_prompt += """
+8. NÃO use variáveis de personalização como {nome}
+9. Use uma saudação genérica como "Olá!" ou "Oi!"
+"""
+
+        # Chamar a API da OpenAI
+        response = client.chat.completions.create(
+            model="gpt-4o-mini",
+            messages=[
+                {"role": "system", "content": system_prompt},
+                {"role": "user", "content": f"Reformule esta mensagem de WhatsApp de forma mais profissional:\n\n{mensagem_original}"}
+            ],
+            max_tokens=500,
+            temperature=0.7
+        )
+
+        mensagem_gerada = response.choices[0].message.content.strip()
+
+        return JsonResponse({
+            'success': True,
+            'mensagem': mensagem_gerada
+        })
+
+    except Exception as e:
+        print(f"[GERAR PROMPT ERROR] {str(e)}")
+        return JsonResponse({
+            'success': False,
+            'error': f'Erro ao gerar mensagem: {str(e)}'
+        })

@@ -1,0 +1,43 @@
+{% extends "base.html" %}
+
+{% block title %}Historico - {{ plano.nome }}{% endblock %}
+
+{% block content %}
+<div class="space-y-6">
+    <div class="flex items-center space-x-3">
+        <a href="{% url 'aquecimento:detalhe_plano' plano.id %}" class="text-gray-500 hover:text-gray-700">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
+            </svg>
+        </a>
+        <h1 class="text-2xl font-bold text-gray-900">Historico de Conversas</h1>
+    </div>
+
+    <div class="space-y-3">
+        {% for conversa in conversas %}
+        <a href="{% url 'aquecimento:ver_conversa' plano.id conversa.id %}"
+            class="block bg-white rounded-lg shadow p-4 hover:shadow-md transition">
+            <div class="flex justify-between items-center">
+                <div class="flex items-center space-x-3">
+                    <span class="px-2 py-0.5 rounded-full text-xs font-medium
+                        {% if conversa.tipo == 'grupo' %}bg-blue-100 text-blue-700{% else %}bg-purple-100 text-purple-700{% endif %}">
+                        {{ conversa.get_tipo_display }}
+                    </span>
+                    <span class="font-medium text-gray-900">{{ conversa.tema }}</span>
+                </div>
+                <div class="text-right">
+                    <span class="text-sm text-gray-500">{{ conversa.total_mensagens }} msgs</span>
+                    {% if not conversa.ativa %}
+                    <span class="ml-2 text-xs bg-gray-100 text-gray-500 px-2 py-0.5 rounded-full">Encerrada</span>
+                    {% endif %}
+                </div>
+            </div>
+        </a>
+        {% empty %}
+        <div class="bg-white rounded-lg shadow p-8 text-center">
+            <p class="text-gray-500">Nenhuma conversa registrada ainda</p>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}

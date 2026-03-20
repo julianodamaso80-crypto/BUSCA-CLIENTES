@@ -1,0 +1,397 @@
+{% extends "base.html" %}
+
+{% block title %}{{ plano.nome }} - Aquecimento{% endblock %}
+
+{% block content %}
+<div class="space-y-6">
+    <!-- Header -->
+    <div class="flex justify-between items-center">
+        <div class="flex items-center space-x-3">
+            <a href="{% url 'aquecimento:dashboard' %}" class="text-gray-500 hover:text-gray-700">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
+                </svg>
+            </a>
+            <div>
+                <h1 class="text-2xl font-bold text-gray-900">{{ plano.nome }}</h1>
+                <p class="text-gray-500 text-sm">Dia {{ plano.dia_atual }}/{{ plano.dias_aquecimento }} | Meta hoje: {{ meta_hoje }} msgs/chip</p>
+            </div>
+        </div>
+        <div class="flex space-x-2">
+            {% if plano.status == 'configurando' or plano.status == 'pausado' %}
+            <button onclick="iniciarAquecimento()" id="btn-iniciar"
+                class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg font-medium transition">
+                {% if plano.status == 'pausado' %}Retomar{% else %}Iniciar{% endif %}
+            </button>
+            {% endif %}
+            {% if plano.status == 'ativo' %}
+            <button onclick="pausarAquecimento()"
+                class="bg-yellow-600 hover:bg-yellow-700 text-white px-4 py-2 rounded-lg font-medium transition">
+                Pausar
+            </button>
+            {% endif %}
+            <button onclick="verificarChips()"
+                class="bg-gray-600 hover:bg-gray-700 text-white px-4 py-2 rounded-lg font-medium transition">
+                Verificar Chips
+            </button>
+        </div>
+    </div>
+
+    <!-- Status Badge -->
+    <div class="flex items-center space-x-4">
+        <span class="px-4 py-1.5 rounded-full text-sm font-medium
+            {% if plano.status == 'ativo' %}bg-green-100 text-green-700
+            {% elif plano.status == 'pausado' %}bg-yellow-100 text-yellow-700
+            {% elif plano.status == 'concluido' %}bg-blue-100 text-blue-700
+            {% else %}bg-gray-100 text-gray-700{% endif %}">
+            {{ plano.get_status_display }}
+        </span>
+        {% if plano.status == 'ativo' %}
+        <span class="text-sm text-gray-500" id="status-text">Aquecimento em andamento...</span>
+        {% endif %}
+    </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <!-- Coluna 1: Chips -->
+        <div class="lg:col-span-2 space-y-6">
+            <!-- Chips -->
+            <div class="bg-white rounded-lg shadow p-6">
+                <div class="flex justify-between items-center mb-4">
+                    <h2 class="text-lg font-semibold text-gray-900">Chips ({{ chips.count }}/20)</h2>
+                    {% if plano.status == 'configurando' %}
+                    <button onclick="document.getElementById('modal-chip').classList.remove('hidden')"
+                        class="bg-orange-600 hover:bg-orange-700 text-white px-3 py-1.5 rounded-lg text-sm font-medium transition">
+                        + Adicionar Chip
+                    </button>
+                    {% endif %}
+                </div>
+
+                {% if progresso_chips %}
+                <div class="space-y-3">
+                    {% for item in progresso_chips %}
+                    <div class="border rounded-lg p-3">
+                        <div class="flex justify-between items-center mb-2">
+                            <div class="flex items-center space-x-2">
+                                <span class="w-2 h-2 rounded-full
+                                    {% if item.chip.status == 'aquecendo' %}bg-green-500
+                                    {% elif item.chip.status == 'conectado' %}bg-blue-500
+                                    {% elif item.chip.status == 'banido' %}bg-red-500
+                                    {% elif item.chip.status == 'pausado' %}bg-yellow-500
+                                    {% else %}bg-gray-400{% endif %}">
+                                </span>
+                                <span class="font-medium text-gray-900">{{ item.chip.apelido }}</span>
+                                <span class="text-xs text-gray-500">{{ item.chip.numero|default:"Sem numero" }}</span>
+                            </div>
+                            <span class="text-xs px-2 py-0.5 rounded-full
+                                {% if item.chip.status == 'aquecendo' %}bg-green-100 text-green-700
+                                {% elif item.chip.status == 'banido' %}bg-red-100 text-red-700
+                                {% else %}bg-gray-100 text-gray-600{% endif %}">
+                                {{ item.chip.get_status_display }}
+                            </span>
+                        </div>
+                        <div class="flex items-center space-x-2">
+                            <div class="flex-1 bg-gray-200 rounded-full h-2">
+                                <div class="bg-orange-500 h-2 rounded-full transition-all" style="width: {{ item.percentual }}%"></div>
+                            </div>
+                            <span class="text-xs text-gray-500 w-24 text-right">{{ item.enviadas_hoje }}/{{ item.meta_hoje }} msgs</span>
+                        </div>
+                        {% if item.chip.erros_consecutivos > 0 %}
+                        <p class="text-xs text-red-500 mt-1">{{ item.chip.erros_consecutivos }} erros consecutivos</p>
+                        {% endif %}
+                    </div>
+                    {% endfor %}
+                </div>
+                {% else %}
+                <p class="text-gray-500 text-sm text-center py-4">Nenhum chip adicionado ainda</p>
+                {% endif %}
+            </div>
+
+            <!-- Grupos -->
+            {% if plano.habilitar_grupo %}
+            <div class="bg-white rounded-lg shadow p-6">
+                <div class="flex justify-between items-center mb-4">
+                    <h2 class="text-lg font-semibold text-gray-900">Grupos</h2>
+                    {% if not grupos %}
+                    <button onclick="criarGrupo()"
+                        class="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1.5 rounded-lg text-sm font-medium transition">
+                        Criar Grupo
+                    </button>
+                    {% endif %}
+                </div>
+                {% for grupo in grupos %}
+                <div class="border rounded-lg p-3 flex justify-between items-center">
+                    <div>
+                        <span class="font-medium text-gray-900">{{ grupo.nome_grupo }}</span>
+                        <span class="text-xs text-gray-500 ml-2">{{ grupo.group_jid|default:"Sem JID" }}</span>
+                    </div>
+                    <span class="text-xs bg-green-100 text-green-700 px-2 py-0.5 rounded-full">Ativo</span>
+                </div>
+                {% empty %}
+                <p class="text-gray-500 text-sm text-center py-2">Grupo será criado ao iniciar o aquecimento</p>
+                {% endfor %}
+            </div>
+            {% endif %}
+
+            <!-- Ultimas conversas -->
+            <div class="bg-white rounded-lg shadow p-6">
+                <div class="flex justify-between items-center mb-4">
+                    <h2 class="text-lg font-semibold text-gray-900">Conversas Recentes</h2>
+                    <a href="{% url 'aquecimento:historico' plano.id %}" class="text-orange-600 hover:text-orange-700 text-sm">
+                        Ver todas
+                    </a>
+                </div>
+                <div id="conversas-lista" class="space-y-2">
+                    {% for conversa in conversas %}
+                    <a href="{% url 'aquecimento:ver_conversa' plano.id conversa.id %}"
+                        class="block border rounded-lg p-3 hover:bg-gray-50 transition">
+                        <div class="flex justify-between items-center">
+                            <div>
+                                <span class="text-xs px-2 py-0.5 rounded-full
+                                    {% if conversa.tipo == 'grupo' %}bg-blue-100 text-blue-700{% else %}bg-purple-100 text-purple-700{% endif %}">
+                                    {{ conversa.get_tipo_display }}
+                                </span>
+                                <span class="ml-2 text-sm text-gray-900">{{ conversa.tema }}</span>
+                            </div>
+                            <span class="text-xs text-gray-500">{{ conversa.total_mensagens }} msgs</span>
+                        </div>
+                    </a>
+                    {% empty %}
+                    <p class="text-gray-500 text-sm text-center py-2">Nenhuma conversa ainda</p>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Coluna 2: Monitor e Previsao -->
+        <div class="space-y-6">
+            <!-- Monitor ao vivo -->
+            <div class="bg-white rounded-lg shadow p-6">
+                <h2 class="text-lg font-semibold text-gray-900 mb-4">Monitor ao Vivo</h2>
+                <div id="ultimas-msgs" class="space-y-2 max-h-80 overflow-y-auto">
+                    <p class="text-gray-400 text-sm text-center py-4">Aguardando mensagens...</p>
+                </div>
+            </div>
+
+            <!-- Previsao de crescimento -->
+            <div class="bg-white rounded-lg shadow p-6">
+                <h2 class="text-lg font-semibold text-gray-900 mb-4">Crescimento Gradual</h2>
+                <div class="space-y-1 max-h-64 overflow-y-auto">
+                    <div class="grid grid-cols-3 text-xs font-medium text-gray-500 border-b pb-1">
+                        <span>Dia</span>
+                        <span>Msgs/chip</span>
+                        <span>Barra</span>
+                    </div>
+                    <div id="previsao-lista"></div>
+                </div>
+            </div>
+
+            <!-- Config resumo -->
+            <div class="bg-white rounded-lg shadow p-6">
+                <h2 class="text-lg font-semibold text-gray-900 mb-3">Configuração</h2>
+                <div class="space-y-2 text-sm text-gray-600">
+                    <div class="flex justify-between">
+                        <span>Horario</span>
+                        <span class="font-medium">{{ plano.horario_inicio|time:"H:i" }} - {{ plano.horario_fim|time:"H:i" }}</span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span>Delay entre msgs</span>
+                        <span class="font-medium">{{ plano.delay_minimo }}s - {{ plano.delay_maximo }}s</span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span>Privado</span>
+                        <span class="font-medium">{{ plano.habilitar_privado|yesno:"Sim,Não" }}</span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span>Grupo</span>
+                        <span class="font-medium">{{ plano.habilitar_grupo|yesno:"Sim,Não" }}</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Adicionar Chip -->
+<div id="modal-chip" class="hidden fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+    <div class="bg-white rounded-lg shadow-xl p-6 max-w-md w-full mx-4">
+        <div class="flex justify-between items-center mb-4">
+            <h3 class="text-lg font-semibold">Adicionar Chip</h3>
+            <button onclick="document.getElementById('modal-chip').classList.add('hidden')" class="text-gray-400 hover:text-gray-600">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                </svg>
+            </button>
+        </div>
+        <form id="form-chip" class="space-y-4">
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">Instância WhatsApp</label>
+                <select id="chip-instancia" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500">
+                    {% for inst in plano.usuario.instancias_whatsapp.all %}
+                    <option value="{{ inst.id }}">{{ inst.nome }} ({{ inst.get_status_display }})</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">Apelido (opcional)</label>
+                <input type="text" id="chip-apelido" placeholder="Ex: Carlos, Ana..."
+                    class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500">
+                <p class="text-xs text-gray-500 mt-1">Se vazio, uma persona sera atribuida automaticamente</p>
+            </div>
+            <button type="button" onclick="adicionarChip()"
+                class="w-full bg-orange-600 hover:bg-orange-700 text-white py-2 rounded-lg font-medium transition">
+                Adicionar
+            </button>
+        </form>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+const planoId = {{ plano.id }};
+const previsao = {{ previsao|safe }};
+const csrfToken = '{{ csrf_token }}';
+
+// Renderizar previsao
+const previsaoEl = document.getElementById('previsao-lista');
+if (previsaoEl && previsao) {
+    const maxMsgs = Math.max(...previsao.map(p => p.msgs));
+    previsaoEl.innerHTML = previsao.map(p => {
+        const pct = Math.round(p.msgs / maxMsgs * 100);
+        const isToday = p.dia === {{ plano.dia_atual }};
+        return `<div class="grid grid-cols-3 items-center py-0.5 ${isToday ? 'bg-orange-50 -mx-2 px-2 rounded' : ''}">
+            <span class="text-xs ${isToday ? 'font-bold text-orange-700' : 'text-gray-600'}">Dia ${p.dia}</span>
+            <span class="text-xs ${isToday ? 'font-bold text-orange-700' : 'text-gray-600'}">${p.msgs}</span>
+            <div class="bg-gray-200 rounded-full h-1.5">
+                <div class="bg-orange-${isToday ? '600' : '400'} h-1.5 rounded-full" style="width:${pct}%"></div>
+            </div>
+        </div>`;
+    }).join('');
+}
+
+function adicionarChip() {
+    const formData = new FormData();
+    formData.append('instancia_id', document.getElementById('chip-instancia').value);
+    formData.append('apelido', document.getElementById('chip-apelido').value);
+
+    fetch(`/aquecimento/${planoId}/adicionar-chip/`, {
+        method: 'POST',
+        headers: {'X-CSRFToken': csrfToken},
+        body: formData,
+    })
+    .then(r => r.json())
+    .then(data => {
+        if (data.success) {
+            location.reload();
+        } else {
+            alert(data.error);
+        }
+    });
+}
+
+function iniciarAquecimento() {
+    {% if plano.status == 'pausado' %}
+    const url = `/aquecimento/${planoId}/retomar/`;
+    {% else %}
+    const url = `/aquecimento/${planoId}/iniciar/`;
+    {% endif %}
+
+    fetch(url, {
+        method: 'POST',
+        headers: {'X-CSRFToken': csrfToken},
+    })
+    .then(r => r.json())
+    .then(data => {
+        if (data.success) {
+            location.reload();
+        } else {
+            alert(data.error);
+        }
+    });
+}
+
+function pausarAquecimento() {
+    fetch(`/aquecimento/${planoId}/pausar/`, {
+        method: 'POST',
+        headers: {'X-CSRFToken': csrfToken},
+    })
+    .then(r => r.json())
+    .then(data => { if (data.success) location.reload(); });
+}
+
+function verificarChips() {
+    fetch(`/aquecimento/${planoId}/verificar-chips/`, {
+        method: 'POST',
+        headers: {'X-CSRFToken': csrfToken},
+    })
+    .then(r => r.json())
+    .then(data => {
+        if (data.success) location.reload();
+    });
+}
+
+function criarGrupo() {
+    fetch(`/aquecimento/${planoId}/criar-grupo/`, {
+        method: 'POST',
+        headers: {'X-CSRFToken': csrfToken},
+    })
+    .then(r => r.json())
+    .then(data => {
+        if (data.success) {
+            alert('Grupo "' + data.grupo_nome + '" criado!');
+            location.reload();
+        } else {
+            alert(data.error);
+        }
+    });
+}
+
+// Auto-refresh do status se aquecimento ativo
+{% if plano.status == 'ativo' %}
+function atualizarStatus() {
+    fetch(`/aquecimento/${planoId}/status/`)
+    .then(r => r.json())
+    .then(data => {
+        // Atualizar mensagens ao vivo
+        const msgsEl = document.getElementById('ultimas-msgs');
+        if (data.ultimas_mensagens && data.ultimas_mensagens.length > 0) {
+            msgsEl.innerHTML = data.ultimas_mensagens.map(m => `
+                <div class="border-l-2 ${m.tipo === 'grupo' ? 'border-blue-400' : 'border-purple-400'} pl-3 py-1">
+                    <div class="flex justify-between">
+                        <span class="text-xs font-medium text-gray-700">${m.remetente}</span>
+                        <span class="text-xs text-gray-400">${m.hora}</span>
+                    </div>
+                    <p class="text-sm text-gray-600">${m.texto}</p>
+                </div>
+            `).join('');
+        }
+    });
+}
+
+setInterval(atualizarStatus, 15000);
+atualizarStatus();
+
+// Executar ciclo periodicamente
+function executarCiclo() {
+    fetch(`/aquecimento/${planoId}/executar-ciclo/`, {
+        method: 'POST',
+        headers: {'X-CSRFToken': csrfToken},
+    })
+    .then(r => r.json())
+    .then(data => {
+        console.log('Ciclo:', data);
+    });
+}
+
+// Executar a cada 2-5 minutos (aleatorio para parecer mais natural)
+function agendarProximoCiclo() {
+    const delay = (120 + Math.random() * 180) * 1000; // 2-5 min
+    setTimeout(() => {
+        executarCiclo();
+        agendarProximoCiclo();
+    }, delay);
+}
+agendarProximoCiclo();
+{% endif %}
+</script>
+{% endblock %}

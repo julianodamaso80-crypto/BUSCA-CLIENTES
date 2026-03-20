@@ -49,6 +49,8 @@ INSTALLED_APPS = [
     'accounts',
     'clientes',
     'disparo',
+    'aquecimento',
+    'context',
 ]
 
 TAILWIND_APP_NAME = 'theme'
@@ -150,3 +152,30 @@ APIFY_GOOGLE_MAPS_ACTOR = 'compass/google-maps-extractor'
 # Evolution API Configuration (WhatsApp)
 EVOLUTION_API_URL = os.getenv('EVOLUTION_API_URL', 'http://localhost:8080')
 EVOLUTION_API_KEY = os.getenv('EVOLUTION_API_KEY', 'change-me')
+
+# ============================================
+# CONTEXT SYSTEM CONFIGURATION
+# ============================================
+
+# OpenAI API Key (for embeddings)
+OPENAI_API_KEY = os.getenv('OPENAI_API_KEY', '')
+
+# ChromaDB persistence directory
+CHROMA_PERSIST_DIRECTORY = BASE_DIR / 'chroma_db'
+
+# Context documents directory
+CONTEXT_DOCS_DIRECTORY = BASE_DIR / 'docs'
+
+# Embedding model configuration
+CONTEXT_EMBEDDING_PROVIDER = os.getenv('CONTEXT_EMBEDDING_PROVIDER', 'openai')  # 'openai' or 'sentence-transformers'
+CONTEXT_EMBEDDING_MODEL = os.getenv('CONTEXT_EMBEDDING_MODEL', 'text-embedding-3-small')
+
+# Chunking configuration
+CONTEXT_MAX_CHUNK_SIZE = int(os.getenv('CONTEXT_MAX_CHUNK_SIZE', 1000))
+CONTEXT_CHUNK_OVERLAP = int(os.getenv('CONTEXT_CHUNK_OVERLAP', 150))
+
+# ============================================
+# OPENROUTER CONFIGURATION (LLM gratuita para aquecimento)
+# ============================================
+OPENROUTER_API_KEY = os.getenv('OPENROUTER_API_KEY', '')
+OPENROUTER_MODEL = os.getenv('OPENROUTER_MODEL', 'meta-llama/llama-3.1-8b-instruct:free')

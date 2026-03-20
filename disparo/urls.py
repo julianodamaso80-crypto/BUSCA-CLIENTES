@@ -10,6 +10,7 @@ urlpatterns = [
     # WhatsApp Connection
     path('conectar/', views.conectar_whatsapp, name='conectar'),
     path('api/criar-instancia/', views.criar_instancia, name='criar_instancia'),
+    path('api/minha-instancia/', views.minha_instancia, name='minha_instancia'),
     path('api/qrcode/<int:instancia_id>/', views.obter_qrcode, name='obter_qrcode'),
     path('api/verificar-conexao/<int:instancia_id>/', views.verificar_conexao, name='verificar_conexao'),
     path('api/desconectar/<int:instancia_id>/', views.desconectar_instancia, name='desconectar'),
@@ -26,10 +27,16 @@ urlpatterns = [
     # Teste
     path('api/enviar-teste/', views.enviar_mensagem_teste, name='enviar_teste'),
 
+    # Gerar Prompt com IA
+    path('api/gerar-prompt/', views.gerar_prompt_ia, name='gerar_prompt'),
+
     # Configurações
     path('configuracoes/', views.configuracoes, name='configuracoes'),
 
     # Contatos Bloqueados
     path('bloqueados/', views.contatos_bloqueados, name='contatos_bloqueados'),
     path('api/desbloquear/<int:contato_id>/', views.desbloquear_contato, name='desbloquear_contato'),
+
+    # Webhook Evolution API
+    path('webhook/', views.webhook_evolution, name='webhook'),
 ]

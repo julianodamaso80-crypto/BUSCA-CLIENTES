@@ -3,262 +3,258 @@
 {% block title %}Conectar WhatsApp - Busca Clientes{% endblock %}
 
 {% block content %}
-<div class="max-w-4xl mx-auto space-y-6">
-    <!-- Header -->
-    <div class="flex items-center justify-between">
-        <div>
-            <h1 class="text-2xl font-bold text-gray-800">Conectar WhatsApp</h1>
-            <p class="text-gray-600">Escaneie o QR Code para conectar sua conta</p>
-        </div>
-        <a href="{% url 'disparo:dashboard' %}" class="text-gray-500 hover:text-gray-700">
-            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
-            </svg>
-        </a>
-    </div>
+<div class="max-w-lg mx-auto">
+    <!-- Card Principal -->
+    <div class="bg-white rounded-2xl shadow-lg border border-gray-100 overflow-hidden">
 
-    <!-- Instâncias Existentes -->
-    {% if instancias %}
-    <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
-        <h2 class="text-lg font-semibold text-gray-800 mb-4">Suas Conexões</h2>
-        <div class="space-y-3">
-            {% for instancia in instancias %}
-            <div class="flex items-center justify-between p-4 bg-gray-50 rounded-lg" data-instancia-id="{{ instancia.id }}">
-                <div class="flex items-center space-x-4">
-                    <div class="{% if instancia.status == 'connected' %}bg-green-100 text-green-600{% elif instancia.status == 'qr_code' %}bg-yellow-100 text-yellow-600{% else %}bg-gray-100 text-gray-400{% endif %} p-3 rounded-full">
-                        <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
-                            <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/>
-                        </svg>
-                    </div>
-                    <div>
-                        <h3 class="font-medium text-gray-800">{{ instancia.nome }}</h3>
-                        <p class="text-sm status-text {% if instancia.status == 'connected' %}text-green-600{% elif instancia.status == 'qr_code' %}text-yellow-600{% else %}text-gray-500{% endif %}">
-                            {{ instancia.get_status_display }}
-                            {% if instancia.numero_conectado %} - {{ instancia.numero_conectado }}{% endif %}
-                        </p>
-                    </div>
-                </div>
-                <div class="flex space-x-2">
-                    {% if instancia.status == 'connected' %}
-                    <button onclick="desconectar({{ instancia.id }})" class="bg-red-100 hover:bg-red-200 text-red-700 px-3 py-1.5 rounded-lg text-sm font-medium transition">
-                        Desconectar
-                    </button>
-                    {% elif instancia.status == 'qr_code' or instancia.status == 'disconnected' %}
-                    <button onclick="obterQRCode({{ instancia.id }})" class="bg-green-100 hover:bg-green-200 text-green-700 px-3 py-1.5 rounded-lg text-sm font-medium transition">
-                        Ver QR Code
-                    </button>
-                    {% endif %}
-                    <button onclick="deletarInstancia({{ instancia.id }})" class="bg-gray-100 hover:bg-gray-200 text-gray-700 px-3 py-1.5 rounded-lg text-sm font-medium transition">
-                        Excluir
-                    </button>
-                </div>
-            </div>
-            {% endfor %}
-        </div>
-    </div>
-    {% endif %}
-
-    <!-- Criar Nova Instância -->
-    <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
-        <h2 class="text-lg font-semibold text-gray-800 mb-4">Nova Conexão</h2>
-
-        <form id="formCriarInstancia" class="space-y-4">
-            {% csrf_token %}
-            <div>
-                <label class="block text-sm font-medium text-gray-700 mb-1">Nome da Instância</label>
-                <input type="text" name="nome" id="nomeInstancia" placeholder="ex: meu-whatsapp"
-                       class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent">
-            </div>
-            <button type="submit" class="w-full bg-green-600 hover:bg-green-700 text-white py-3 rounded-lg font-medium transition flex items-center justify-center">
-                <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
+        <!-- Header Verde WhatsApp -->
+        <div class="bg-gradient-to-r from-green-500 to-green-600 p-6 text-center">
+            <div class="bg-white/20 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-3">
+                <svg class="w-10 h-10 text-white" fill="currentColor" viewBox="0 0 24 24">
+                    <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/>
                 </svg>
-                Criar Instância
-            </button>
-        </form>
-    </div>
+            </div>
+            <h1 class="text-2xl font-bold text-white">Conectar WhatsApp</h1>
+            <p class="text-white/80 text-sm mt-1">Escaneie o QR Code com seu celular</p>
+        </div>
 
-    <!-- Modal QR Code -->
-    <div id="modalQRCode" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50">
-        <div class="bg-white rounded-2xl p-8 max-w-md w-full mx-4">
-            <div class="text-center">
-                <h3 class="text-xl font-bold text-gray-800 mb-2">Escaneie o QR Code</h3>
-                <p class="text-gray-600 mb-6">Abra o WhatsApp no seu celular, vá em Dispositivos Conectados e escaneie o código</p>
+        <!-- Área do QR Code -->
+        <div class="p-8">
+            <!-- Status: Conectado -->
+            <div id="statusConectado" class="hidden text-center py-8">
+                <div class="bg-green-100 w-24 h-24 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <svg class="w-12 h-12 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path>
+                    </svg>
+                </div>
+                <h2 class="text-xl font-bold text-green-600 mb-2">Conectado!</h2>
+                <p id="numeroConectado" class="text-gray-600"></p>
+                <button onclick="desconectar()" class="mt-6 bg-red-100 hover:bg-red-200 text-red-700 px-6 py-2 rounded-lg font-medium transition">
+                    Desconectar
+                </button>
+            </div>
 
-                <div id="qrCodeContainer" class="bg-gray-100 rounded-xl p-4 mb-6">
-                    <div id="qrCodeLoading" class="flex items-center justify-center h-64">
-                        <svg class="animate-spin h-10 w-10 text-green-600" fill="none" viewBox="0 0 24 24">
-                            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+            <!-- Status: QR Code -->
+            <div id="statusQRCode" class="text-center">
+                <!-- Loading -->
+                <div id="qrLoading" class="py-8">
+                    <svg class="animate-spin h-12 w-12 text-green-600 mx-auto mb-4" fill="none" viewBox="0 0 24 24">
+                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    </svg>
+                    <p class="text-gray-500">Gerando QR Code...</p>
+                </div>
+
+                <!-- QR Code Image -->
+                <div id="qrContainer" class="hidden">
+                    <div class="bg-white border-4 border-green-500 rounded-2xl p-4 inline-block shadow-lg">
+                        <img id="qrCodeImage" class="w-64 h-64" alt="QR Code WhatsApp">
+                    </div>
+
+                    <p class="text-gray-600 mt-4 text-sm">
+                        Abra o WhatsApp → <strong>Dispositivos Conectados</strong> → Escanear
+                    </p>
+
+                    <!-- Countdown para expirar -->
+                    <div class="mt-4 flex items-center justify-center space-x-2 text-gray-500 text-sm">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                        </svg>
+                        <span>QR expira em <span id="countdown" class="font-mono font-bold">30</span>s</span>
+                    </div>
+
+                    <button onclick="atualizarQRCode()" class="mt-4 bg-gray-100 hover:bg-gray-200 text-gray-700 px-4 py-2 rounded-lg text-sm font-medium transition">
+                        Gerar novo QR Code
+                    </button>
+                </div>
+
+                <!-- Erro -->
+                <div id="qrErro" class="hidden py-8">
+                    <div class="bg-red-100 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
+                        <svg class="w-8 h-8 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path>
                         </svg>
                     </div>
-                    <img id="qrCodeImage" class="hidden mx-auto" alt="QR Code WhatsApp">
-                </div>
-
-                <div id="pairingCodeContainer" class="hidden mb-4">
-                    <p class="text-sm text-gray-600 mb-2">Ou use o código de emparelhamento:</p>
-                    <p id="pairingCode" class="text-2xl font-mono font-bold text-green-600 tracking-wider"></p>
-                </div>
-
-                <div id="statusConexao" class="text-sm text-gray-500 mb-4">
-                    Aguardando conexão...
-                </div>
-
-                <div class="flex space-x-3">
-                    <button onclick="fecharModal()" class="flex-1 bg-gray-100 hover:bg-gray-200 text-gray-700 py-2 rounded-lg font-medium transition">
-                        Fechar
-                    </button>
-                    <button onclick="atualizarQRCode()" class="flex-1 bg-green-100 hover:bg-green-200 text-green-700 py-2 rounded-lg font-medium transition">
-                        Atualizar QR
+                    <h3 id="erroTitulo" class="text-lg font-bold text-red-600 mb-2">Erro ao conectar</h3>
+                    <p id="erroMensagem" class="text-gray-600 text-sm mb-4">Não foi possível obter o QR Code. Verifique sua conexão.</p>
+                    <button onclick="tentarNovamente()" class="mt-4 bg-green-600 hover:bg-green-700 text-white px-6 py-2 rounded-lg font-medium transition">
+                        Tentar Novamente
                     </button>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- Instruções -->
-    <div class="bg-blue-50 border border-blue-200 rounded-xl p-6">
-        <h3 class="font-semibold text-blue-800 mb-3">Como conectar:</h3>
-        <ol class="list-decimal list-inside space-y-2 text-blue-700">
-            <li>Clique em "Criar Instância" para gerar um QR Code</li>
-            <li>Abra o WhatsApp no seu celular</li>
-            <li>Vá em <strong>Configurações > Dispositivos Conectados</strong></li>
-            <li>Toque em <strong>Conectar Dispositivo</strong></li>
-            <li>Escaneie o QR Code exibido na tela</li>
-        </ol>
-
-        <div class="mt-4 p-4 bg-amber-50 border border-amber-200 rounded-lg">
-            <p class="text-amber-700 text-sm">
-                <strong>Importante:</strong> A Evolution API precisa estar rodando em <code class="bg-amber-100 px-1 rounded">localhost:8080</code>.
-                Veja as instruções de configuração no AGENTS.md.
-            </p>
-        </div>
+    <!-- Voltar -->
+    <div class="text-center mt-6">
+        <a href="{% url 'disparo:dashboard' %}" class="text-gray-500 hover:text-gray-700 text-sm">
+            ← Voltar para Disparo
+        </a>
     </div>
 </div>
 {% endblock %}
 
 {% block extra_js %}
 <script>
-let instanciaAtualId = null;
-let verificarConexaoInterval = null;
+let instanciaId = null;
+let verificarInterval = null;
+let countdownInterval = null;
+let countdownValue = 30;
 
-// Criar instância
-document.getElementById('formCriarInstancia').addEventListener('submit', async function(e) {
-    e.preventDefault();
+// Iniciar automaticamente ao carregar a página
+document.addEventListener('DOMContentLoaded', iniciar);
 
-    const formData = new FormData(this);
+async function iniciar() {
+    console.log('[DISPARO] Iniciando verificação de status...');
+    await verificarStatus();
+}
 
+async function verificarStatus() {
     try {
-        const response = await fetch('{% url "disparo:criar_instancia" %}', {
-            method: 'POST',
-            body: formData,
-            headers: {
-                'X-CSRFToken': formData.get('csrfmiddlewaretoken')
-            }
-        });
+        console.log('[DISPARO] Chamando /disparo/api/minha-instancia/...');
+        const response = await fetch('/disparo/api/minha-instancia/');
+        console.log('[DISPARO] Response status:', response.status);
+
+        if (!response.ok) {
+            console.log('[DISPARO] Response não ok, obtendo QR Code...');
+            await obterQRCode();
+            return;
+        }
 
         const data = await response.json();
+        console.log('[DISPARO] Dados recebidos:', data);
 
-        if (data.success) {
-            instanciaAtualId = data.instancia_id;
-            obterQRCode(instanciaAtualId);
-            // Recarregar página após criar
-            setTimeout(() => location.reload(), 1000);
+        if (data.success && data.status === 'connected') {
+            console.log('[DISPARO] WhatsApp conectado! Número:', data.numero);
+            instanciaId = data.instancia_id;
+            mostrarConectado(data.numero);
+        } else if (data.success && data.instancia_id) {
+            console.log('[DISPARO] Instância existe mas não conectada, obtendo QR...');
+            instanciaId = data.instancia_id;
+            await obterQRCode();
         } else {
-            alert('Erro: ' + data.error);
+            console.log('[DISPARO] Sem instância, obtendo QR...');
+            await obterQRCode();
         }
     } catch (error) {
-        console.error('Erro:', error);
-        alert('Erro ao criar instância. Verifique se a Evolution API está rodando.');
-    }
-});
-
-// Obter QR Code
-async function obterQRCode(instanciaId) {
-    instanciaAtualId = instanciaId;
-    document.getElementById('modalQRCode').classList.remove('hidden');
-    document.getElementById('modalQRCode').classList.add('flex');
-    document.getElementById('qrCodeLoading').classList.remove('hidden');
-    document.getElementById('qrCodeImage').classList.add('hidden');
-    document.getElementById('pairingCodeContainer').classList.add('hidden');
-
-    try {
-        const response = await fetch(`/disparo/api/qrcode/${instanciaId}/`);
-        const data = await response.json();
-
-        if (data.success) {
-            document.getElementById('qrCodeLoading').classList.add('hidden');
-
-            if (data.qr_code) {
-                const img = document.getElementById('qrCodeImage');
-                img.src = data.qr_code.startsWith('data:') ? data.qr_code : 'data:image/png;base64,' + data.qr_code;
-                img.classList.remove('hidden');
-            }
-
-            if (data.pairing_code) {
-                document.getElementById('pairingCode').textContent = data.pairing_code;
-                document.getElementById('pairingCodeContainer').classList.remove('hidden');
-            }
-
-            // Iniciar verificação de conexão
-            iniciarVerificacaoConexao(instanciaId);
-        } else {
-            document.getElementById('statusConexao').textContent = 'Erro: ' + data.error;
-        }
-    } catch (error) {
-        console.error('Erro:', error);
-        document.getElementById('statusConexao').textContent = 'Erro ao obter QR Code. Verifique a Evolution API.';
+        console.error('[DISPARO] Erro:', error);
+        await obterQRCode();
     }
 }
 
-// Verificar conexão periodicamente
-function iniciarVerificacaoConexao(instanciaId) {
-    if (verificarConexaoInterval) {
-        clearInterval(verificarConexaoInterval);
-    }
+async function obterQRCode() {
+    mostrarLoading();
 
-    verificarConexaoInterval = setInterval(async () => {
+    try {
+        // Obter instância do usuário
+        const instResponse = await fetch('/disparo/api/minha-instancia/');
+        const instData = await instResponse.json();
+
+        if (!instData.success) {
+            mostrarErro();
+            return;
+        }
+
+        instanciaId = instData.instancia_id;
+
+        // Se já conectado, mostrar status
+        if (instData.status === 'connected') {
+            mostrarConectado(instData.numero);
+            return;
+        }
+
+        // Obter QR Code
+        const qrResponse = await fetch(`/disparo/api/qrcode/${instanciaId}/`);
+        const qrData = await qrResponse.json();
+
+        if (qrData.success && qrData.qr_code) {
+            mostrarQRCode(qrData.qr_code);
+            iniciarVerificacao();
+            iniciarCountdown();
+        } else {
+            mostrarErro();
+        }
+    } catch (error) {
+        console.error('Erro:', error);
+        mostrarErro();
+    }
+}
+
+function mostrarLoading() {
+    document.getElementById('qrLoading').classList.remove('hidden');
+    document.getElementById('qrContainer').classList.add('hidden');
+    document.getElementById('qrErro').classList.add('hidden');
+    document.getElementById('statusConectado').classList.add('hidden');
+    document.getElementById('statusQRCode').classList.remove('hidden');
+}
+
+function mostrarQRCode(base64) {
+    document.getElementById('qrLoading').classList.add('hidden');
+    document.getElementById('qrContainer').classList.remove('hidden');
+    document.getElementById('qrErro').classList.add('hidden');
+
+    const img = document.getElementById('qrCodeImage');
+    img.src = base64.startsWith('data:') ? base64 : 'data:image/png;base64,' + base64;
+}
+
+function mostrarConectado(numero) {
+    document.getElementById('statusQRCode').classList.add('hidden');
+    document.getElementById('statusConectado').classList.remove('hidden');
+    document.getElementById('numeroConectado').textContent = numero ? `Número: ${numero}` : '';
+
+    pararIntervals();
+}
+
+function mostrarErro() {
+    document.getElementById('qrLoading').classList.add('hidden');
+    document.getElementById('qrContainer').classList.add('hidden');
+    document.getElementById('qrErro').classList.remove('hidden');
+}
+
+function iniciarVerificacao() {
+    pararIntervals();
+
+    verificarInterval = setInterval(async () => {
         try {
             const response = await fetch(`/disparo/api/verificar-conexao/${instanciaId}/`);
             const data = await response.json();
 
-            if (data.success) {
-                document.getElementById('statusConexao').textContent = data.status_display;
-
-                // Atualizar status na lista
-                const instanciaEl = document.querySelector(`[data-instancia-id="${instanciaId}"]`);
-                if (instanciaEl) {
-                    const statusText = instanciaEl.querySelector('.status-text');
-                    if (statusText) {
-                        statusText.textContent = data.status_display;
-                    }
-                }
-
-                if (data.status === 'connected') {
-                    clearInterval(verificarConexaoInterval);
-                    document.getElementById('statusConexao').innerHTML = '<span class="text-green-600 font-medium">Conectado com sucesso!</span>';
-                    setTimeout(() => {
-                        fecharModal();
-                        location.reload();
-                    }, 2000);
-                }
+            if (data.success && data.status === 'connected') {
+                mostrarConectado(data.numero);
             }
         } catch (error) {
-            console.error('Erro ao verificar conexão:', error);
+            console.error('Erro verificação:', error);
         }
-    }, 3000);
+    }, 2000);
 }
 
-// Atualizar QR Code
+function iniciarCountdown() {
+    countdownValue = 30;
+    document.getElementById('countdown').textContent = countdownValue;
+
+    if (countdownInterval) clearInterval(countdownInterval);
+
+    countdownInterval = setInterval(() => {
+        countdownValue--;
+        document.getElementById('countdown').textContent = countdownValue;
+
+        if (countdownValue <= 0) {
+            atualizarQRCode();
+        }
+    }, 1000);
+}
+
 function atualizarQRCode() {
-    if (instanciaAtualId) {
-        obterQRCode(instanciaAtualId);
-    }
+    pararIntervals();
+    obterQRCode();
 }
 
-// Desconectar
-async function desconectar(instanciaId) {
-    if (!confirm('Tem certeza que deseja desconectar?')) return;
+function tentarNovamente() {
+    iniciar();
+}
+
+async function desconectar() {
+    if (!instanciaId) return;
 
     try {
         const response = await fetch(`/disparo/api/desconectar/${instanciaId}/`, {
@@ -271,51 +267,21 @@ async function desconectar(instanciaId) {
         const data = await response.json();
         if (data.success) {
             location.reload();
-        } else {
-            alert('Erro: ' + data.error);
         }
     } catch (error) {
         console.error('Erro:', error);
     }
 }
 
-// Deletar instância
-async function deletarInstancia(instanciaId) {
-    if (!confirm('Tem certeza que deseja excluir esta instância?')) return;
-
-    try {
-        const response = await fetch(`/disparo/api/deletar-instancia/${instanciaId}/`, {
-            method: 'POST',
-            headers: {
-                'X-CSRFToken': '{{ csrf_token }}'
-            }
-        });
-
-        const data = await response.json();
-        if (data.success) {
-            location.reload();
-        } else {
-            alert('Erro: ' + data.error);
-        }
-    } catch (error) {
-        console.error('Erro:', error);
+function pararIntervals() {
+    if (verificarInterval) {
+        clearInterval(verificarInterval);
+        verificarInterval = null;
+    }
+    if (countdownInterval) {
+        clearInterval(countdownInterval);
+        countdownInterval = null;
     }
 }
-
-// Fechar modal
-function fecharModal() {
-    document.getElementById('modalQRCode').classList.add('hidden');
-    document.getElementById('modalQRCode').classList.remove('flex');
-    if (verificarConexaoInterval) {
-        clearInterval(verificarConexaoInterval);
-    }
-}
-
-// Fechar modal ao clicar fora
-document.getElementById('modalQRCode').addEventListener('click', function(e) {
-    if (e.target === this) {
-        fecharModal();
-    }
-});
 </script>
 {% endblock %}

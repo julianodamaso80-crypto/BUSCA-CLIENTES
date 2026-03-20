@@ -17,7 +17,27 @@
       "Bash(dir:*)",
       "Bash(git init:*)",
       "Bash(git add:*)",
-      "Bash(git reset:*)"
+      "Bash(git reset:*)",
+      "Bash(git commit -m \"$\\(cat <<''EOF''\nCommit inicial - Sistema de Busca de Clientes\n\n- Projeto Django com estrutura base\n- Apps: accounts, clientes, core, theme\n- Configuração Tailwind CSS\n- Templates base\n\nCo-Authored-By: Claude Opus 4.5 <noreply@anthropic.com>\nEOF\n\\)\")",
+      "Bash(git branch:*)",
+      "Bash(git remote add:*)",
+      "Bash(git push:*)",
+      "Bash(./venv/Scripts/python.exe:*)",
+      "Bash(find:*)",
+      "Bash(taskkill:*)",
+      "Bash(pkill:*)",
+      "Bash(netstat:*)",
+      "Bash(findstr:*)",
+      "Bash(python manage.py startapp:*)",
+      "Bash(python manage.py makemigrations:*)",
+      "Bash(pip install:*)",
+      "Bash(tree:*)",
+      "Bash(python manage.py:*)",
+      "Bash(venvScriptspip.exe install markdown-it-py --quiet)",
+      "Bash(python -m pip install:*)",
+      "Bash(more:*)",
+      "Bash(venvScriptspip install openai)",
+      "WebSearch"
     ]
   }
 }

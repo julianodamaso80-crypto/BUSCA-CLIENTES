@@ -29,18 +29,6 @@
             Conectar WhatsApp
         </a>
     </div>
-    {% elif not listas %}
-    <!-- Alerta: Sem listas -->
-    <div class="bg-amber-50 border border-amber-200 rounded-xl p-6 text-center">
-        <svg class="w-12 h-12 text-amber-400 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"></path>
-        </svg>
-        <h3 class="text-lg font-semibold text-amber-800 mb-2">Nenhuma lista disponível</h3>
-        <p class="text-amber-600 mb-4">Você precisa fazer uma busca de clientes antes de criar uma campanha.</p>
-        <a href="{% url 'buscar_clientes' %}" class="inline-block bg-amber-600 hover:bg-amber-700 text-white px-6 py-2 rounded-lg font-medium transition">
-            Buscar Clientes
-        </a>
-    </div>
     {% else %}
     <!-- Formulário -->
     <form method="post" class="space-y-6">
@@ -63,10 +51,39 @@
             </select>
         </div>
 
-        <!-- Seleção de Lista -->
+        <!-- Tipo de Envio -->
         <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+            <label class="block text-sm font-medium text-gray-700 mb-3">Tipo de Envio</label>
+            <div class="flex space-x-4">
+                {% if listas %}
+                <label class="flex items-center cursor-pointer">
+                    <input type="radio" name="tipo_envio" value="lista" checked
+                           class="w-4 h-4 text-blue-600 border-gray-300 focus:ring-blue-500"
+                           onchange="toggleTipoEnvio()">
+                    <span class="ml-2 text-gray-700">Lista de Clientes</span>
+                </label>
+                <label class="flex items-center cursor-pointer">
+                    <input type="radio" name="tipo_envio" value="manual"
+                           class="w-4 h-4 text-blue-600 border-gray-300 focus:ring-blue-500"
+                           onchange="toggleTipoEnvio()">
+                    <span class="ml-2 text-gray-700">Número Manual</span>
+                </label>
+                {% else %}
+                <label class="flex items-center cursor-pointer">
+                    <input type="radio" name="tipo_envio" value="manual" checked
+                           class="w-4 h-4 text-blue-600 border-gray-300 focus:ring-blue-500">
+                    <span class="ml-2 text-gray-700">Número Manual</span>
+                </label>
+                <span class="text-sm text-gray-500 ml-4">(Faça uma busca para ter listas de clientes)</span>
+                {% endif %}
+            </div>
+        </div>
+
+        {% if listas %}
+        <!-- Seleção de Lista -->
+        <div id="secaoLista" class="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
             <label class="block text-sm font-medium text-gray-700 mb-2">Lista de Clientes</label>
-            <select name="lista" id="selectLista" required class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+            <select name="lista" id="selectLista" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
                 <option value="">Selecione uma lista...</option>
                 {% for lista in listas %}
                 <option value="{{ lista.id }}" data-contatos="{{ lista.total_resultados }}">
@@ -77,6 +94,27 @@
             <p id="infoContatos" class="mt-2 text-sm text-gray-500 hidden">
                 <span id="numContatos"></span> contatos serão incluídos nesta campanha
             </p>
+        </div>
+        {% endif %}
+
+        <!-- Número Manual -->
+        <div id="secaoManual" class="bg-white rounded-xl shadow-sm border border-gray-100 p-6 {% if listas %}hidden{% endif %}">
+            <div class="space-y-4">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Número do WhatsApp</label>
+                    <input type="text" name="numero_manual" id="numeroManual"
+                           placeholder="ex: 11999998888 (só números, com DDD)"
+                           class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                    <p class="mt-1 text-xs text-gray-500">Digite apenas números, incluindo DDD. Não precisa do 55.</p>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Nome do Cliente (opcional)</label>
+                    <input type="text" name="nome_manual" id="nomeManual"
+                           placeholder="ex: João Silva"
+                           class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                    <p class="mt-1 text-xs text-gray-500">Se informado, será usado para personalizar a mensagem.</p>
+                </div>
+            </div>
         </div>
 
         <!-- Mensagem -->
@@ -107,6 +145,24 @@ Dica: Use {nome} para inserir o nome do cliente automaticamente."
                     Chamar cliente pelo nome (personalização)
                 </label>
             </div>
+
+            <!-- Botão Gerar Prompt com IA -->
+            <div class="mt-4 pt-4 border-t border-gray-200">
+                <button type="button" id="btnGerarPrompt" onclick="gerarPromptIA()"
+                        class="flex items-center justify-center w-full sm:w-auto px-4 py-2 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-white rounded-lg font-medium transition shadow-sm">
+                    <svg id="iconIA" class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"></path>
+                    </svg>
+                    <svg id="iconLoading" class="hidden animate-spin w-5 h-5 mr-2" fill="none" viewBox="0 0 24 24">
+                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    </svg>
+                    <span id="btnGerarTexto">Gerar Prompt com IA</span>
+                </button>
+                <p class="mt-2 text-xs text-gray-500">
+                    Escreva sua ideia de mensagem e clique para a IA reformular de forma mais profissional
+                </p>
+            </div>
         </div>
 
         <!-- Preview da Mensagem -->
@@ -114,11 +170,11 @@ Dica: Use {nome} para inserir o nome do cliente automaticamente."
             <h3 class="text-sm font-medium text-gray-700 mb-3">Preview da Mensagem</h3>
             <div class="bg-green-50 border border-green-200 rounded-xl p-4">
                 <div class="flex items-start space-x-3">
-                    <div class="bg-green-500 text-white w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold">
+                    <div id="previewInicial" class="bg-green-500 text-white w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold">
                         J
                     </div>
                     <div class="flex-1">
-                        <p class="text-xs text-gray-500 mb-1">João Silva</p>
+                        <p id="previewNome" class="text-xs text-gray-500 mb-1">João Silva</p>
                         <div class="bg-white rounded-lg p-3 shadow-sm">
                             <p id="previewMensagem" class="text-gray-800 text-sm whitespace-pre-wrap">
                                 A mensagem aparecerá aqui...
@@ -165,6 +221,29 @@ Dica: Use {nome} para inserir o nome do cliente automaticamente."
 
 {% block extra_js %}
 <script>
+// Toggle entre Lista e Número Manual
+function toggleTipoEnvio() {
+    const tipoListaRadio = document.querySelector('input[name="tipo_envio"][value="lista"]');
+    const tipoLista = tipoListaRadio ? tipoListaRadio.checked : false;
+    const secaoLista = document.getElementById('secaoLista');
+    const secaoManual = document.getElementById('secaoManual');
+    const selectLista = document.getElementById('selectLista');
+    const numeroManual = document.getElementById('numeroManual');
+
+    if (tipoLista && secaoLista) {
+        secaoLista.classList.remove('hidden');
+        secaoManual.classList.add('hidden');
+        if (selectLista) selectLista.required = true;
+        numeroManual.required = false;
+    } else {
+        if (secaoLista) secaoLista.classList.add('hidden');
+        secaoManual.classList.remove('hidden');
+        if (selectLista) selectLista.required = false;
+        numeroManual.required = true;
+    }
+    atualizarPreview();
+}
+
 // Atualizar contador de caracteres e preview
 document.getElementById('mensagem').addEventListener('input', function() {
     const texto = this.value;
@@ -172,17 +251,23 @@ document.getElementById('mensagem').addEventListener('input', function() {
     atualizarPreview();
 });
 
-// Atualizar info de contatos
-document.getElementById('selectLista').addEventListener('change', function() {
-    const option = this.options[this.selectedIndex];
-    const contatos = option.dataset.contatos;
-    if (contatos) {
-        document.getElementById('numContatos').textContent = contatos;
-        document.getElementById('infoContatos').classList.remove('hidden');
-    } else {
-        document.getElementById('infoContatos').classList.add('hidden');
-    }
-});
+// Atualizar info de contatos (só se existir a lista)
+const selectLista = document.getElementById('selectLista');
+if (selectLista) {
+    selectLista.addEventListener('change', function() {
+        const option = this.options[this.selectedIndex];
+        const contatos = option.dataset.contatos;
+        if (contatos) {
+            document.getElementById('numContatos').textContent = contatos;
+            document.getElementById('infoContatos').classList.remove('hidden');
+        } else {
+            document.getElementById('infoContatos').classList.add('hidden');
+        }
+    });
+}
+
+// Atualizar preview quando digitar nome manual
+document.getElementById('nomeManual').addEventListener('input', atualizarPreview);
 
 // Checkbox usar nome
 document.getElementById('usar_nome').addEventListener('change', atualizarPreview);
@@ -204,23 +289,108 @@ function inserirVariavel(variavel) {
 function atualizarPreview() {
     let mensagem = document.getElementById('mensagem').value;
     const usarNome = document.getElementById('usar_nome').checked;
+    const tipoListaRadio = document.querySelector('input[name="tipo_envio"][value="lista"]');
+    const tipoLista = tipoListaRadio ? tipoListaRadio.checked : false;
+
+    // Nome para preview
+    let nomeCompleto = 'João Silva';
+    let primeiroNome = 'João';
+
+    if (!tipoLista) {
+        const nomeManual = document.getElementById('nomeManual').value.trim();
+        if (nomeManual) {
+            nomeCompleto = nomeManual;
+            primeiroNome = nomeManual.split(' ')[0];
+        }
+    }
+
+    // Atualizar nome e inicial no preview
+    document.getElementById('previewNome').textContent = nomeCompleto;
+    document.getElementById('previewInicial').textContent = primeiroNome.charAt(0).toUpperCase();
 
     if (usarNome) {
-        mensagem = mensagem.replace(/{nome}/gi, 'João');
-        if (!mensagem.includes('João') && mensagem.trim()) {
-            mensagem = 'Olá João! ' + mensagem;
+        mensagem = mensagem.replace(/{nome}/gi, primeiroNome);
+        if (!mensagem.includes(primeiroNome) && mensagem.trim()) {
+            mensagem = 'Olá ' + primeiroNome + '! ' + mensagem;
         }
     }
 
     document.getElementById('previewMensagem').textContent = mensagem || 'A mensagem aparecerá aqui...';
 }
 
-// URL params
-const urlParams = new URLSearchParams(window.location.search);
-const listaId = urlParams.get('lista');
-if (listaId) {
-    document.getElementById('selectLista').value = listaId;
-    document.getElementById('selectLista').dispatchEvent(new Event('change'));
+// URL params (só se existir a lista)
+if (selectLista) {
+    const urlParams = new URLSearchParams(window.location.search);
+    const listaId = urlParams.get('lista');
+    if (listaId) {
+        selectLista.value = listaId;
+        selectLista.dispatchEvent(new Event('change'));
+    }
+}
+
+// Inicializar estado
+toggleTipoEnvio();
+
+// Gerar Prompt com IA
+async function gerarPromptIA() {
+    const mensagem = document.getElementById('mensagem').value.trim();
+    const usarNome = document.getElementById('usar_nome').checked;
+    const btn = document.getElementById('btnGerarPrompt');
+    const iconIA = document.getElementById('iconIA');
+    const iconLoading = document.getElementById('iconLoading');
+    const btnTexto = document.getElementById('btnGerarTexto');
+
+    if (!mensagem) {
+        alert('Por favor, escreva uma mensagem primeiro para a IA reformular.');
+        return;
+    }
+
+    // Mostrar loading
+    btn.disabled = true;
+    iconIA.classList.add('hidden');
+    iconLoading.classList.remove('hidden');
+    btnTexto.textContent = 'Gerando...';
+
+    try {
+        const response = await fetch('/disparo/api/gerar-prompt/', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': '{{ csrf_token }}'
+            },
+            body: JSON.stringify({
+                mensagem: mensagem,
+                usar_nome: usarNome
+            })
+        });
+
+        const data = await response.json();
+
+        if (data.success) {
+            // Atualizar textarea com a mensagem gerada
+            document.getElementById('mensagem').value = data.mensagem;
+            document.getElementById('charCount').textContent = data.mensagem.length;
+            atualizarPreview();
+
+            // Feedback visual de sucesso
+            btnTexto.textContent = 'Pronto!';
+            setTimeout(() => {
+                btnTexto.textContent = 'Gerar Prompt com IA';
+            }, 2000);
+        } else {
+            alert(data.error || 'Erro ao gerar mensagem. Tente novamente.');
+            btnTexto.textContent = 'Gerar Prompt com IA';
+        }
+    } catch (error) {
+        console.error('Erro:', error);
+        alert('Erro ao conectar com o servidor. Tente novamente.');
+        btnTexto.textContent = 'Gerar Prompt com IA';
+    } finally {
+        // Restaurar botão
+        btn.disabled = false;
+        iconIA.classList.remove('hidden');
+        iconLoading.classList.add('hidden');
+    }
 }
 </script>
 {% endblock %}
