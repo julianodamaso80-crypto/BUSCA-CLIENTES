@@ -1,0 +1,1177 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BuscaLeads — Seus concorrentes já estão usando. E você?</title>
+    <meta name="description" content="Encontre, qualifique e converta leads B2B no piloto automático. Enquanto você lê isso, seu concorrente está fechando negócios com a nossa plataforma.">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: { sans: ['Inter', 'sans-serif'] },
+                    colors: {
+                        brand: {
+                            50: '#eef7ff', 100: '#d9edff', 200: '#bce0ff',
+                            300: '#8ecdff', 400: '#53b1ff', 500: '#2b8fff',
+                            600: '#146ff5', 700: '#0d59e1', 800: '#1148b6',
+                            900: '#143f8f', 950: '#112857',
+                        },
+                        dark: { 800: '#0f1117', 900: '#080a0e', 950: '#030407' }
+                    },
+                    animation: {
+                        'float': 'float 6s ease-in-out infinite',
+                        'pulse-slow': 'pulse 4s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+                        'slide-up': 'slideUp 0.8s ease-out forwards',
+                        'slide-right': 'slideRight 0.8s ease-out forwards',
+                        'counter': 'counter 2s ease-out forwards',
+                        'glow': 'glow 2s ease-in-out infinite alternate',
+                    },
+                    keyframes: {
+                        float: {
+                            '0%, 100%': { transform: 'translateY(0px)' },
+                            '50%': { transform: 'translateY(-20px)' },
+                        },
+                        slideUp: {
+                            '0%': { opacity: '0', transform: 'translateY(40px)' },
+                            '100%': { opacity: '1', transform: 'translateY(0)' },
+                        },
+                        slideRight: {
+                            '0%': { opacity: '0', transform: 'translateX(-40px)' },
+                            '100%': { opacity: '1', transform: 'translateX(0)' },
+                        },
+                        glow: {
+                            '0%': { boxShadow: '0 0 20px rgba(43, 143, 255, 0.3)' },
+                            '100%': { boxShadow: '0 0 40px rgba(43, 143, 255, 0.6), 0 0 80px rgba(43, 143, 255, 0.2)' },
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        * { scroll-behavior: smooth; }
+        body { background: #080a0e; }
+
+        .gradient-text {
+            background: linear-gradient(135deg, #2b8fff 0%, #53b1ff 50%, #8ecdff 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .gradient-border {
+            position: relative;
+            background: #0f1117;
+            border-radius: 1rem;
+        }
+        .gradient-border::before {
+            content: '';
+            position: absolute;
+            inset: -1px;
+            border-radius: 1rem;
+            padding: 1px;
+            background: linear-gradient(135deg, #2b8fff, transparent, #2b8fff);
+            -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+            -webkit-mask-composite: xor;
+            mask-composite: exclude;
+        }
+
+        .hero-glow {
+            position: absolute;
+            width: 600px;
+            height: 600px;
+            background: radial-gradient(circle, rgba(43, 143, 255, 0.15) 0%, transparent 70%);
+            border-radius: 50%;
+            filter: blur(60px);
+            pointer-events: none;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-8px) scale(1.02);
+            box-shadow: 0 20px 60px rgba(43, 143, 255, 0.15);
+        }
+
+        .feature-card:hover {
+            border-color: rgba(43, 143, 255, 0.5);
+            transform: translateY(-4px);
+        }
+
+        .cta-button {
+            position: relative;
+            overflow: hidden;
+            transition: all 0.3s ease;
+        }
+        .cta-button::before {
+            content: '';
+            position: absolute;
+            top: 0; left: -100%;
+            width: 100%; height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+            transition: left 0.5s ease;
+        }
+        .cta-button:hover::before { left: 100%; }
+        .cta-button:hover { transform: scale(1.05); box-shadow: 0 10px 40px rgba(43, 143, 255, 0.4); }
+
+        .urgency-bar {
+            background: linear-gradient(90deg, #ef4444, #f97316, #ef4444);
+            background-size: 200% 100%;
+            animation: urgencySlide 3s linear infinite;
+        }
+        @keyframes urgencySlide {
+            0% { background-position: 0% 0; }
+            100% { background-position: 200% 0; }
+        }
+
+        .testimonial-card { transition: all 0.4s ease; }
+        .testimonial-card:hover { transform: scale(1.03); }
+
+        .pricing-popular {
+            position: relative;
+            border: 2px solid #2b8fff;
+            box-shadow: 0 0 40px rgba(43, 143, 255, 0.15);
+        }
+
+        .scroll-reveal {
+            opacity: 0;
+            transform: translateY(30px);
+            transition: all 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+        .scroll-reveal.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .img-overlay {
+            position: relative;
+            overflow: hidden;
+            border-radius: 1rem;
+        }
+        .img-overlay::after {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(135deg, rgba(8,10,14,0.4) 0%, transparent 50%);
+            border-radius: 1rem;
+        }
+        .img-overlay img {
+            transition: transform 0.6s ease;
+        }
+        .img-overlay:hover img {
+            transform: scale(1.05);
+        }
+
+        .marquee {
+            animation: marquee 30s linear infinite;
+        }
+        @keyframes marquee {
+            0% { transform: translateX(0); }
+            100% { transform: translateX(-50%); }
+        }
+
+        .line-clamp-2 {
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+
+        /* Number counter animation */
+        @property --num {
+            syntax: '<integer>';
+            initial-value: 0;
+            inherits: false;
+        }
+
+        .strikethrough { text-decoration: line-through; color: #6b7280; }
+    </style>
+</head>
+<body class="font-sans text-gray-200 antialiased overflow-x-hidden">
+
+    <!-- URGENCY BAR -->
+    <div class="urgency-bar fixed top-0 left-0 right-0 z-50 py-2 text-center text-white text-sm font-semibold tracking-wide">
+        <span class="inline-flex items-center gap-2">
+            <svg class="w-4 h-4 animate-pulse" fill="currentColor" viewBox="0 0 20 20"><path d="M10 2a6 6 0 00-6 6v3.586l-.707.707A1 1 0 004 14h12a1 1 0 00.707-1.707L16 11.586V8a6 6 0 00-6-6z"/></svg>
+            VAGAS LIMITADAS — Apenas <strong class="text-yellow-300">23 vagas</strong> restantes com desconto de lançamento
+            <svg class="w-4 h-4 animate-pulse" fill="currentColor" viewBox="0 0 20 20"><path d="M10 2a6 6 0 00-6 6v3.586l-.707.707A1 1 0 004 14h12a1 1 0 00.707-1.707L16 11.586V8a6 6 0 00-6-6z"/></svg>
+        </span>
+    </div>
+
+    <!-- NAVBAR -->
+    <nav class="fixed top-8 left-0 right-0 z-40 bg-dark-900/80 backdrop-blur-xl border-b border-white/5">
+        <div class="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
+            <div class="flex items-center gap-2">
+                <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-brand-500 to-brand-700 flex items-center justify-center">
+                    <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z"/></svg>
+                </div>
+                <span class="text-xl font-bold text-white">Busca<span class="text-brand-400">Leads</span></span>
+            </div>
+            <div class="hidden md:flex items-center gap-8 text-sm text-gray-400">
+                <a href="#problema" class="hover:text-white transition-colors">O Problema</a>
+                <a href="#solucao" class="hover:text-white transition-colors">Solução</a>
+                <a href="#funcionalidades" class="hover:text-white transition-colors">Como Funciona</a>
+                <a href="#preco" class="hover:text-white transition-colors">Preços</a>
+            </div>
+            <a href="#preco" class="cta-button bg-brand-600 hover:bg-brand-500 text-white px-6 py-2.5 rounded-xl font-semibold text-sm">
+                Começar Agora
+            </a>
+        </div>
+    </nav>
+
+    <!-- ============================================ -->
+    <!-- SEÇÃO 1: HERO — SEM IMAGEM -->
+    <!-- ============================================ -->
+    <section class="relative min-h-screen flex items-center justify-center pt-32 pb-20 overflow-hidden">
+        <!-- Background effects -->
+        <div class="hero-glow top-1/4 left-1/4 -translate-x-1/2 -translate-y-1/2"></div>
+        <div class="hero-glow bottom-1/4 right-1/4 translate-x-1/2 translate-y-1/2" style="animation-delay: 3s;"></div>
+        <div class="absolute inset-0" style="background-image: radial-gradient(rgba(43, 143, 255, 0.05) 1px, transparent 1px); background-size: 40px 40px;"></div>
+
+        <div class="relative z-10 max-w-5xl mx-auto px-6 text-center">
+            <!-- Badge -->
+            <div class="inline-flex items-center gap-2 bg-brand-950/50 border border-brand-800/30 rounded-full px-5 py-2 mb-8 animate-slide-up">
+                <span class="w-2 h-2 bg-green-400 rounded-full animate-pulse"></span>
+                <span class="text-sm text-brand-300">+2.847 empresas já prospectam no automático</span>
+            </div>
+
+            <h1 class="text-5xl md:text-7xl lg:text-8xl font-black leading-[0.9] tracking-tight mb-8 animate-slide-up" style="animation-delay: 0.1s;">
+                <span class="text-white">Seus concorrentes</span><br>
+                <span class="gradient-text">estão roubando</span><br>
+                <span class="text-white">seus clientes.</span><br>
+                <span class="text-gray-500 text-4xl md:text-5xl lg:text-6xl font-bold mt-2 block">Agora mesmo.</span>
+            </h1>
+
+            <p class="text-xl md:text-2xl text-gray-400 max-w-3xl mx-auto mb-4 animate-slide-up leading-relaxed" style="animation-delay: 0.2s;">
+                Enquanto você prospecta manualmente, <strong class="text-white">empresas inteligentes</strong> encontram, qualificam e disparam para
+                <strong class="text-brand-400">centenas de leads por dia</strong> — no piloto automático.
+            </p>
+
+            <p class="text-lg text-red-400/80 mb-10 animate-slide-up font-medium" style="animation-delay: 0.25s;">
+                A questão não é SE você vai perder mercado. É QUANTO já perdeu.
+            </p>
+
+            <div class="flex flex-col sm:flex-row gap-4 justify-center mb-16 animate-slide-up" style="animation-delay: 0.3s;">
+                <a href="#preco" class="cta-button bg-brand-600 hover:bg-brand-500 text-white px-10 py-5 rounded-2xl font-bold text-lg animate-glow">
+                    Quero Parar de Perder Clientes
+                    <svg class="w-5 h-5 inline ml-2" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M13 7l5 5m0 0l-5 5m5-5H6"/></svg>
+                </a>
+                <a href="#demo" class="border border-white/10 hover:border-white/30 text-white px-10 py-5 rounded-2xl font-semibold text-lg transition-all hover:bg-white/5">
+                    Ver Demonstração
+                </a>
+            </div>
+
+            <!-- Social proof micro -->
+            <div class="flex items-center justify-center gap-6 text-sm text-gray-500 animate-slide-up" style="animation-delay: 0.4s;">
+                <div class="flex -space-x-3">
+                    <img src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=40&h=40&fit=crop&crop=face" class="w-10 h-10 rounded-full border-2 border-dark-900" alt="">
+                    <img src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=40&h=40&fit=crop&crop=face" class="w-10 h-10 rounded-full border-2 border-dark-900" alt="">
+                    <img src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=40&h=40&fit=crop&crop=face" class="w-10 h-10 rounded-full border-2 border-dark-900" alt="">
+                    <img src="https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=40&h=40&fit=crop&crop=face" class="w-10 h-10 rounded-full border-2 border-dark-900" alt="">
+                    <div class="w-10 h-10 rounded-full border-2 border-dark-900 bg-brand-900 flex items-center justify-center text-xs text-brand-300 font-bold">+2k</div>
+                </div>
+                <div class="flex items-center gap-1">
+                    <div class="flex text-yellow-400">
+                        <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/></svg>
+                        <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/></svg>
+                        <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/></svg>
+                        <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/></svg>
+                        <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/></svg>
+                    </div>
+                    <span>4.9/5 — 847 avaliações</span>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ============================================ -->
+    <!-- SEÇÃO 2: O PROBLEMA — COM IMAGEM -->
+    <!-- ============================================ -->
+    <section id="problema" class="relative py-24 overflow-hidden">
+        <div class="max-w-7xl mx-auto px-6">
+            <div class="grid lg:grid-cols-2 gap-16 items-center">
+                <!-- Text -->
+                <div class="scroll-reveal">
+                    <span class="inline-block text-red-400 text-sm font-bold uppercase tracking-widest mb-4">O problema que você ignora</span>
+                    <h2 class="text-4xl md:text-5xl font-black text-white leading-tight mb-6">
+                        Você está jogando<br>
+                        <span class="text-red-400">dinheiro no lixo.</span><br>
+                        <span class="text-gray-500">Todo. Santo. Dia.</span>
+                    </h2>
+                    <div class="space-y-5 text-lg text-gray-400 leading-relaxed">
+                        <p>
+                            <strong class="text-white">Prospecção manual é coisa do passado.</strong> Você gasta horas no Google, anota telefones em planilha, liga para números errados, manda mensagem para quem não quer comprar...
+                        </p>
+                        <p>
+                            E no final do mês? <strong class="text-red-400">Resultado pífio.</strong> Custo de aquisição nas alturas. Equipe desmotivada. Metas não batidas.
+                        </p>
+                    </div>
+
+                    <div class="mt-8 grid grid-cols-2 gap-4">
+                        <div class="bg-red-950/30 border border-red-900/30 rounded-xl p-4">
+                            <div class="text-3xl font-black text-red-400">73%</div>
+                            <div class="text-sm text-red-300/70 mt-1">do tempo de vendas é desperdiçado com prospecção manual</div>
+                        </div>
+                        <div class="bg-red-950/30 border border-red-900/30 rounded-xl p-4">
+                            <div class="text-3xl font-black text-red-400">R$4.200</div>
+                            <div class="text-sm text-red-300/70 mt-1">custo médio por cliente com métodos tradicionais</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Image -->
+                <div class="scroll-reveal img-overlay" style="animation-delay: 0.2s;">
+                    <img src="https://images.unsplash.com/photo-1454165804606-c3d57bc86b40?w=700&h=500&fit=crop" alt="Pessoa frustrada com prospecção manual" class="w-full h-[500px] object-cover rounded-2xl">
+                    <div class="absolute bottom-6 left-6 right-6 z-10 bg-dark-900/90 backdrop-blur-sm rounded-xl p-4 border border-red-900/30">
+                        <p class="text-red-400 font-bold text-sm">A DURA REALIDADE:</p>
+                        <p class="text-white text-sm mt-1">Enquanto você prospecta 20 leads por dia, seu concorrente automatizado prospecta 500.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ============================================ -->
+    <!-- SEÇÃO 3: AGITAÇÃO — SEM IMAGEM -->
+    <!-- ============================================ -->
+    <section class="py-24 relative">
+        <div class="absolute inset-0 bg-gradient-to-b from-transparent via-red-950/5 to-transparent"></div>
+        <div class="max-w-4xl mx-auto px-6 text-center relative z-10">
+            <div class="scroll-reveal">
+                <span class="inline-block text-red-400 text-sm font-bold uppercase tracking-widest mb-4">Seja honesto consigo mesmo</span>
+                <h2 class="text-4xl md:text-5xl font-black text-white leading-tight mb-12">
+                    Quantas vezes você já pensou:<br>
+                    <span class="text-gray-500">"deve ter um jeito melhor"?</span>
+                </h2>
+            </div>
+
+            <div class="grid md:grid-cols-3 gap-6">
+                <div class="scroll-reveal gradient-border p-8 text-left" style="animation-delay: 0.1s;">
+                    <div class="text-4xl mb-4">😤</div>
+                    <h3 class="text-white font-bold text-lg mb-3">"Minha equipe vive reclamando de leads frios"</h3>
+                    <p class="text-gray-400 text-sm">Leads sem qualificação = tempo perdido. Seu time liga para quem nunca vai comprar.</p>
+                </div>
+                <div class="scroll-reveal gradient-border p-8 text-left" style="animation-delay: 0.2s;">
+                    <div class="text-4xl mb-4">💸</div>
+                    <h3 class="text-white font-bold text-lg mb-3">"Gasto demais com marketing e não tenho retorno"</h3>
+                    <p class="text-gray-400 text-sm">Tráfego pago sem inteligência é rasgar dinheiro. Lead qualificado custa 10x menos.</p>
+                </div>
+                <div class="scroll-reveal gradient-border p-8 text-left" style="animation-delay: 0.3s;">
+                    <div class="text-4xl mb-4">⏰</div>
+                    <h3 class="text-white font-bold text-lg mb-3">"Não tenho tempo de prospectar como deveria"</h3>
+                    <p class="text-gray-400 text-sm">Você é empreendedor, não estagiário. Seu tempo vale mais que copiar dados do Google.</p>
+                </div>
+            </div>
+
+            <div class="scroll-reveal mt-16 bg-gradient-to-r from-red-950/40 via-red-900/20 to-red-950/40 border border-red-900/30 rounded-2xl p-8" style="animation-delay: 0.4s;">
+                <p class="text-2xl md:text-3xl font-bold text-white leading-relaxed">
+                    "Insanidade é fazer a mesma coisa repetidamente e esperar resultados diferentes."
+                </p>
+                <p class="text-red-400 mt-4 font-semibold">— Albert Einstein</p>
+                <p class="text-gray-500 mt-2 text-sm">Se sua prospecção não mudou nos últimos 6 meses, seus resultados também não vão mudar.</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- ============================================ -->
+    <!-- SEÇÃO 4: A SOLUÇÃO — COM IMAGEM -->
+    <!-- ============================================ -->
+    <section id="solucao" class="py-24 relative overflow-hidden">
+        <div class="absolute inset-0 bg-gradient-to-b from-transparent via-brand-950/10 to-transparent"></div>
+        <div class="max-w-7xl mx-auto px-6 relative z-10">
+            <div class="grid lg:grid-cols-2 gap-16 items-center">
+                <!-- Image -->
+                <div class="scroll-reveal img-overlay order-2 lg:order-1">
+                    <img src="https://images.unsplash.com/photo-1551434678-e076c223a692?w=700&h=500&fit=crop" alt="Equipe comemorando resultados" class="w-full h-[500px] object-cover rounded-2xl">
+                    <div class="absolute top-6 left-6 z-10 bg-green-500/20 backdrop-blur-sm border border-green-500/30 rounded-xl px-4 py-2">
+                        <span class="text-green-400 font-bold text-sm flex items-center gap-2">
+                            <span class="w-2 h-2 bg-green-400 rounded-full animate-pulse"></span>
+                            SISTEMA ATIVO — 847 leads gerados hoje
+                        </span>
+                    </div>
+                </div>
+
+                <!-- Text -->
+                <div class="scroll-reveal order-1 lg:order-2" style="animation-delay: 0.2s;">
+                    <span class="inline-block text-brand-400 text-sm font-bold uppercase tracking-widest mb-4">A virada de jogo</span>
+                    <h2 class="text-4xl md:text-5xl font-black text-white leading-tight mb-6">
+                        Apresentamos o<br>
+                        <span class="gradient-text">BuscaLeads.</span><br>
+                        <span class="text-gray-400 text-3xl">Sua máquina de vendas.</span>
+                    </h2>
+                    <p class="text-lg text-gray-400 leading-relaxed mb-8">
+                        O único sistema que <strong class="text-white">encontra, qualifica, enriquece e dispara</strong> para seus leads ideais — tudo no piloto automático. Enquanto você dorme, o BuscaLeads trabalha.
+                    </p>
+
+                    <div class="space-y-4">
+                        <div class="flex items-start gap-4">
+                            <div class="w-10 h-10 rounded-xl bg-brand-600/20 flex items-center justify-center flex-shrink-0 mt-0.5">
+                                <svg class="w-5 h-5 text-brand-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z"/></svg>
+                            </div>
+                            <div>
+                                <h4 class="text-white font-bold">Busca inteligente via Google Maps</h4>
+                                <p class="text-gray-400 text-sm mt-1">Encontre qualquer tipo de negócio, em qualquer cidade, com filtros avançados.</p>
+                            </div>
+                        </div>
+                        <div class="flex items-start gap-4">
+                            <div class="w-10 h-10 rounded-xl bg-green-600/20 flex items-center justify-center flex-shrink-0 mt-0.5">
+                                <svg class="w-5 h-5 text-green-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                            </div>
+                            <div>
+                                <h4 class="text-white font-bold">Qualificação automática com IA</h4>
+                                <p class="text-gray-400 text-sm mt-1">Score de 0-100, classificação quente/morno/frio. Foque só no que converte.</p>
+                            </div>
+                        </div>
+                        <div class="flex items-start gap-4">
+                            <div class="w-10 h-10 rounded-xl bg-purple-600/20 flex items-center justify-center flex-shrink-0 mt-0.5">
+                                <svg class="w-5 h-5 text-purple-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M7.5 8.25h9m-9 3H12m-9.75 1.51c0 1.6 1.123 2.994 2.707 3.227 1.129.166 2.27.293 3.423.379.35.026.67.21.865.501L12 21l2.755-4.133a1.14 1.14 0 01.865-.501 48.172 48.172 0 003.423-.379c1.584-.233 2.707-1.626 2.707-3.228V6.741c0-1.602-1.123-2.995-2.707-3.228A48.394 48.394 0 0012 3c-2.392 0-4.744.175-7.043.513C3.373 3.746 2.25 5.14 2.25 6.741v6.018z"/></svg>
+                            </div>
+                            <div>
+                                <h4 class="text-white font-bold">Disparo WhatsApp com proteção anti-ban</h4>
+                                <p class="text-gray-400 text-sm mt-1">Até 500 mensagens/dia com delays inteligentes. Seu chip nunca cai.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ============================================ -->
+    <!-- SEÇÃO 5: NÚMEROS QUE IMPRESSIONAM — SEM IMAGEM -->
+    <!-- ============================================ -->
+    <section class="py-24 relative">
+        <div class="max-w-7xl mx-auto px-6">
+            <div class="text-center mb-16 scroll-reveal">
+                <span class="inline-block text-brand-400 text-sm font-bold uppercase tracking-widest mb-4">Resultados reais</span>
+                <h2 class="text-4xl md:text-5xl font-black text-white">
+                    Números que fazem<br><span class="gradient-text">seu concorrente tremer.</span>
+                </h2>
+            </div>
+
+            <div class="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
+                <div class="scroll-reveal stat-card gradient-border p-8 text-center transition-all duration-500" style="animation-delay: 0.1s;">
+                    <div class="text-5xl font-black gradient-text mb-2" data-count="500">500+</div>
+                    <div class="text-gray-400 text-sm">Leads qualificados<br>por dia</div>
+                </div>
+                <div class="scroll-reveal stat-card gradient-border p-8 text-center transition-all duration-500" style="animation-delay: 0.2s;">
+                    <div class="text-5xl font-black text-green-400 mb-2">87%</div>
+                    <div class="text-gray-400 text-sm">Redução no custo<br>de aquisição</div>
+                </div>
+                <div class="scroll-reveal stat-card gradient-border p-8 text-center transition-all duration-500" style="animation-delay: 0.3s;">
+                    <div class="text-5xl font-black text-purple-400 mb-2">3.2x</div>
+                    <div class="text-gray-400 text-sm">Mais conversões<br>que métodos manuais</div>
+                </div>
+                <div class="scroll-reveal stat-card gradient-border p-8 text-center transition-all duration-500" style="animation-delay: 0.4s;">
+                    <div class="text-5xl font-black text-yellow-400 mb-2">24/7</div>
+                    <div class="text-gray-400 text-sm">Prospecção automática<br>sem parar</div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ============================================ -->
+    <!-- SEÇÃO 6: COMO FUNCIONA — COM IMAGEM -->
+    <!-- ============================================ -->
+    <section id="funcionalidades" class="py-24 relative overflow-hidden">
+        <div class="max-w-7xl mx-auto px-6">
+            <div class="text-center mb-16 scroll-reveal">
+                <span class="inline-block text-brand-400 text-sm font-bold uppercase tracking-widest mb-4">Simples assim</span>
+                <h2 class="text-4xl md:text-5xl font-black text-white">
+                    3 cliques. <span class="gradient-text">Centenas de leads.</span>
+                </h2>
+                <p class="text-gray-400 text-lg mt-4 max-w-2xl mx-auto">Se você sabe usar WhatsApp, você sabe usar o BuscaLeads. Sem curva de aprendizado.</p>
+            </div>
+
+            <div class="grid lg:grid-cols-2 gap-16 items-center">
+                <!-- Steps -->
+                <div class="space-y-8">
+                    <div class="scroll-reveal flex items-start gap-6" style="animation-delay: 0.1s;">
+                        <div class="w-16 h-16 rounded-2xl bg-brand-600 flex items-center justify-center flex-shrink-0 text-2xl font-black text-white">1</div>
+                        <div>
+                            <h3 class="text-xl font-bold text-white mb-2">Defina seu cliente ideal</h3>
+                            <p class="text-gray-400">Escolha o segmento, a cidade, e o tipo de contato. O sistema busca no Google Maps em segundos.</p>
+                        </div>
+                    </div>
+                    <div class="scroll-reveal flex items-start gap-6" style="animation-delay: 0.2s;">
+                        <div class="w-16 h-16 rounded-2xl bg-brand-600 flex items-center justify-center flex-shrink-0 text-2xl font-black text-white">2</div>
+                        <div>
+                            <h3 class="text-xl font-bold text-white mb-2">IA qualifica automaticamente</h3>
+                            <p class="text-gray-400">CNPJ, WhatsApp validado, presença digital, score de 0-100. Leads quentes no topo.</p>
+                        </div>
+                    </div>
+                    <div class="scroll-reveal flex items-start gap-6" style="animation-delay: 0.3s;">
+                        <div class="w-16 h-16 rounded-2xl bg-brand-600 flex items-center justify-center flex-shrink-0 text-2xl font-black text-white">3</div>
+                        <div>
+                            <h3 class="text-xl font-bold text-white mb-2">Dispare e converta</h3>
+                            <p class="text-gray-400">Envie mensagens personalizadas via WhatsApp com proteção anti-ban. Ou exporte para seu CRM.</p>
+                        </div>
+                    </div>
+
+                    <div class="scroll-reveal bg-brand-950/30 border border-brand-800/30 rounded-2xl p-6 mt-8" style="animation-delay: 0.4s;">
+                        <p class="text-brand-300 font-semibold text-sm flex items-center gap-2">
+                            <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"/></svg>
+                            TEMPO MÉDIO PARA PRIMEIRO RESULTADO: 4 MINUTOS
+                        </p>
+                    </div>
+                </div>
+
+                <!-- Image -->
+                <div class="scroll-reveal img-overlay" style="animation-delay: 0.2s;">
+                    <img src="https://images.unsplash.com/photo-1460925895917-afdab827c52f?w=700&h=600&fit=crop" alt="Dashboard de resultados" class="w-full h-[600px] object-cover rounded-2xl">
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ============================================ -->
+    <!-- SEÇÃO 7: COMPARAÇÃO ANTES/DEPOIS — SEM IMAGEM -->
+    <!-- ============================================ -->
+    <section class="py-24 relative">
+        <div class="absolute inset-0 bg-gradient-to-b from-transparent via-brand-950/5 to-transparent"></div>
+        <div class="max-w-5xl mx-auto px-6 relative z-10">
+            <div class="text-center mb-16 scroll-reveal">
+                <span class="inline-block text-brand-400 text-sm font-bold uppercase tracking-widest mb-4">Antes vs Depois</span>
+                <h2 class="text-4xl md:text-5xl font-black text-white">
+                    A diferença é <span class="gradient-text">vergonhosa.</span>
+                </h2>
+            </div>
+
+            <div class="grid md:grid-cols-2 gap-8">
+                <!-- ANTES -->
+                <div class="scroll-reveal bg-red-950/20 border border-red-900/30 rounded-2xl p-8" style="animation-delay: 0.1s;">
+                    <div class="text-red-400 font-black text-xl mb-6 flex items-center gap-2">
+                        <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd"/></svg>
+                        SEM BuscaLeads
+                    </div>
+                    <ul class="space-y-4">
+                        <li class="flex items-start gap-3 text-gray-400">
+                            <svg class="w-5 h-5 text-red-500 flex-shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd"/></svg>
+                            <span>20-30 leads por dia (se tiver sorte)</span>
+                        </li>
+                        <li class="flex items-start gap-3 text-gray-400">
+                            <svg class="w-5 h-5 text-red-500 flex-shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd"/></svg>
+                            <span>Dados desatualizados e incompletos</span>
+                        </li>
+                        <li class="flex items-start gap-3 text-gray-400">
+                            <svg class="w-5 h-5 text-red-500 flex-shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd"/></svg>
+                            <span>Sem saber se tem WhatsApp ativo</span>
+                        </li>
+                        <li class="flex items-start gap-3 text-gray-400">
+                            <svg class="w-5 h-5 text-red-500 flex-shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd"/></svg>
+                            <span>Chip do WhatsApp banido constantemente</span>
+                        </li>
+                        <li class="flex items-start gap-3 text-gray-400">
+                            <svg class="w-5 h-5 text-red-500 flex-shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd"/></svg>
+                            <span>R$4.200+ custo por cliente adquirido</span>
+                        </li>
+                        <li class="flex items-start gap-3 text-gray-400">
+                            <svg class="w-5 h-5 text-red-500 flex-shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd"/></svg>
+                            <span>Equipe desmotivada e sem resultado</span>
+                        </li>
+                    </ul>
+                </div>
+
+                <!-- DEPOIS -->
+                <div class="scroll-reveal bg-green-950/20 border border-green-900/30 rounded-2xl p-8" style="animation-delay: 0.2s;">
+                    <div class="text-green-400 font-black text-xl mb-6 flex items-center gap-2">
+                        <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/></svg>
+                        COM BuscaLeads
+                    </div>
+                    <ul class="space-y-4">
+                        <li class="flex items-start gap-3 text-gray-300">
+                            <svg class="w-5 h-5 text-green-500 flex-shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/></svg>
+                            <span><strong class="text-white">500+ leads qualificados</strong> por dia, no automático</span>
+                        </li>
+                        <li class="flex items-start gap-3 text-gray-300">
+                            <svg class="w-5 h-5 text-green-500 flex-shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/></svg>
+                            <span><strong class="text-white">CNPJ, razão social, porte</strong> — dados enriquecidos</span>
+                        </li>
+                        <li class="flex items-start gap-3 text-gray-300">
+                            <svg class="w-5 h-5 text-green-500 flex-shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/></svg>
+                            <span><strong class="text-white">WhatsApp validado</strong> antes do disparo</span>
+                        </li>
+                        <li class="flex items-start gap-3 text-gray-300">
+                            <svg class="w-5 h-5 text-green-500 flex-shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/></svg>
+                            <span><strong class="text-white">Anti-ban inteligente</strong> — seu chip protegido 24h</span>
+                        </li>
+                        <li class="flex items-start gap-3 text-gray-300">
+                            <svg class="w-5 h-5 text-green-500 flex-shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/></svg>
+                            <span><strong class="text-white">R$540</strong> custo médio por cliente — <span class="strikethrough">R$4.200</span></span>
+                        </li>
+                        <li class="flex items-start gap-3 text-gray-300">
+                            <svg class="w-5 h-5 text-green-500 flex-shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/></svg>
+                            <span><strong class="text-white">Equipe focada em fechar</strong>, não em prospectar</span>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ============================================ -->
+    <!-- SEÇÃO 8: DEPOIMENTOS — COM IMAGEM -->
+    <!-- ============================================ -->
+    <section class="py-24 relative overflow-hidden">
+        <div class="max-w-7xl mx-auto px-6">
+            <div class="text-center mb-16 scroll-reveal">
+                <span class="inline-block text-brand-400 text-sm font-bold uppercase tracking-widest mb-4">Prova social</span>
+                <h2 class="text-4xl md:text-5xl font-black text-white">
+                    Quem usa, <span class="gradient-text">não volta atrás.</span>
+                </h2>
+            </div>
+
+            <div class="grid md:grid-cols-3 gap-8">
+                <div class="scroll-reveal testimonial-card gradient-border p-8" style="animation-delay: 0.1s;">
+                    <div class="flex text-yellow-400 mb-4">
+                        <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/></svg>
+                        <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/></svg>
+                        <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/></svg>
+                        <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/></svg>
+                        <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/></svg>
+                    </div>
+                    <p class="text-gray-300 leading-relaxed mb-6">"Em 2 semanas fechei <strong class="text-white">R$47.000 em contratos</strong> que nunca teria encontrado manualmente. O ROI é absurdo."</p>
+                    <div class="flex items-center gap-4">
+                        <img src="https://images.unsplash.com/photo-1560250097-0b93528c311a?w=60&h=60&fit=crop&crop=face" alt="" class="w-12 h-12 rounded-full">
+                        <div>
+                            <div class="text-white font-bold text-sm">Ricardo Mendes</div>
+                            <div class="text-gray-500 text-xs">CEO — Agência Digital</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="scroll-reveal testimonial-card gradient-border p-8" style="animation-delay: 0.2s;">
+                    <div class="flex text-yellow-400 mb-4">
+                        <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/></svg>
+                        <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/></svg>
+                        <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/></svg>
+                        <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/></svg>
+                        <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/></svg>
+                    </div>
+                    <p class="text-gray-300 leading-relaxed mb-6">"Meu vendedor gastava 4 horas por dia prospectando. Agora ele <strong class="text-white">fecha 3x mais</strong> porque só recebe lead quente na mão."</p>
+                    <div class="flex items-center gap-4">
+                        <img src="https://images.unsplash.com/photo-1573497019940-1c28c88b4f3e?w=60&h=60&fit=crop&crop=face" alt="" class="w-12 h-12 rounded-full">
+                        <div>
+                            <div class="text-white font-bold text-sm">Carla Souza</div>
+                            <div class="text-gray-500 text-xs">Diretora Comercial — Tech Solutions</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="scroll-reveal testimonial-card gradient-border p-8" style="animation-delay: 0.3s;">
+                    <div class="flex text-yellow-400 mb-4">
+                        <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/></svg>
+                        <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/></svg>
+                        <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/></svg>
+                        <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/></svg>
+                        <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/></svg>
+                    </div>
+                    <p class="text-gray-300 leading-relaxed mb-6">"Eu achava que era impossível escalar prospecção sem contratar mais gente. <strong class="text-white">O BuscaLeads faz o trabalho de 5 SDRs.</strong>"</p>
+                    <div class="flex items-center gap-4">
+                        <img src="https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?w=60&h=60&fit=crop&crop=face" alt="" class="w-12 h-12 rounded-full">
+                        <div>
+                            <div class="text-white font-bold text-sm">Felipe Santos</div>
+                            <div class="text-gray-500 text-xs">Fundador — Consultoria B2B</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ============================================ -->
+    <!-- SEÇÃO 9: FUNCIONALIDADES DETALHADAS — SEM IMAGEM -->
+    <!-- ============================================ -->
+    <section class="py-24 relative">
+        <div class="max-w-7xl mx-auto px-6">
+            <div class="text-center mb-16 scroll-reveal">
+                <span class="inline-block text-brand-400 text-sm font-bold uppercase tracking-widest mb-4">Arsenal completo</span>
+                <h2 class="text-4xl md:text-5xl font-black text-white">
+                    Tudo que você precisa.<br><span class="gradient-text">Nada que não precisa.</span>
+                </h2>
+            </div>
+
+            <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                <div class="scroll-reveal feature-card bg-dark-800/50 border border-white/5 rounded-2xl p-8 transition-all duration-300" style="animation-delay: 0.05s;">
+                    <div class="w-14 h-14 rounded-2xl bg-brand-600/20 flex items-center justify-center mb-5">
+                        <svg class="w-7 h-7 text-brand-400" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15 10.5a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1115 0z"/></svg>
+                    </div>
+                    <h3 class="text-white font-bold text-lg mb-2">Busca Google Maps</h3>
+                    <p class="text-gray-400 text-sm">Encontre empresas por segmento, cidade e estado. Dados reais e atualizados direto do Maps.</p>
+                </div>
+
+                <div class="scroll-reveal feature-card bg-dark-800/50 border border-white/5 rounded-2xl p-8 transition-all duration-300" style="animation-delay: 0.1s;">
+                    <div class="w-14 h-14 rounded-2xl bg-green-600/20 flex items-center justify-center mb-5">
+                        <svg class="w-7 h-7 text-green-400" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75m-3-7.036A11.959 11.959 0 013.598 6 11.99 11.99 0 003 9.749c0 5.592 3.824 10.29 9 11.623 5.176-1.332 9-6.03 9-11.622 0-1.31-.21-2.571-.598-3.751h-.152c-3.196 0-6.1-1.248-8.25-3.285z"/></svg>
+                    </div>
+                    <h3 class="text-white font-bold text-lg mb-2">Validação WhatsApp</h3>
+                    <p class="text-gray-400 text-sm">Confirma se o número tem WhatsApp ativo antes do disparo. Zero desperdício.</p>
+                </div>
+
+                <div class="scroll-reveal feature-card bg-dark-800/50 border border-white/5 rounded-2xl p-8 transition-all duration-300" style="animation-delay: 0.15s;">
+                    <div class="w-14 h-14 rounded-2xl bg-purple-600/20 flex items-center justify-center mb-5">
+                        <svg class="w-7 h-7 text-purple-400" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3.75 3v11.25A2.25 2.25 0 006 16.5h2.25M3.75 3h-1.5m1.5 0h16.5m0 0h1.5m-1.5 0v11.25A2.25 2.25 0 0118 16.5h-2.25m-7.5 0h7.5m-7.5 0l-1 3m8.5-3l1 3m0 0l.5 1.5m-.5-1.5h-9.5m0 0l-.5 1.5M9 11.25v1.5M12 9v3.75m3-6v6"/></svg>
+                    </div>
+                    <h3 class="text-white font-bold text-lg mb-2">Lead Scoring IA</h3>
+                    <p class="text-gray-400 text-sm">Score inteligente de 0-100 com classificação automática: quente, morno ou frio.</p>
+                </div>
+
+                <div class="scroll-reveal feature-card bg-dark-800/50 border border-white/5 rounded-2xl p-8 transition-all duration-300" style="animation-delay: 0.2s;">
+                    <div class="w-14 h-14 rounded-2xl bg-yellow-600/20 flex items-center justify-center mb-5">
+                        <svg class="w-7 h-7 text-yellow-400" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m5.231 13.481L15 17.25m-4.5-15H5.625c-.621 0-1.125.504-1.125 1.125v16.5c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9zm3.75 11.625a2.625 2.625 0 11-5.25 0 2.625 2.625 0 015.25 0z"/></svg>
+                    </div>
+                    <h3 class="text-white font-bold text-lg mb-2">Enriquecimento CNPJ</h3>
+                    <p class="text-gray-400 text-sm">Razão social, porte, capital social, CNAE, data de abertura — tudo automático via Receita Federal.</p>
+                </div>
+
+                <div class="scroll-reveal feature-card bg-dark-800/50 border border-white/5 rounded-2xl p-8 transition-all duration-300" style="animation-delay: 0.25s;">
+                    <div class="w-14 h-14 rounded-2xl bg-red-600/20 flex items-center justify-center mb-5">
+                        <svg class="w-7 h-7 text-red-400" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15.59 14.37a6 6 0 01-5.84 7.38v-4.8m5.84-2.58a14.98 14.98 0 006.16-12.12A14.98 14.98 0 009.631 8.41m5.96 5.96a14.926 14.926 0 01-5.841 2.58m-.119-8.54a6 6 0 00-7.381 5.84h4.8m2.581-5.84a14.927 14.927 0 00-2.58 5.84m2.699 2.7c-.103.021-.207.041-.311.06a15.09 15.09 0 01-2.448-2.448 14.9 14.9 0 01.06-.312m-2.24 2.39a4.493 4.493 0 00-1.757 4.306 4.493 4.493 0 004.306-1.758M16.5 9a1.5 1.5 0 11-3 0 1.5 1.5 0 013 0z"/></svg>
+                    </div>
+                    <h3 class="text-white font-bold text-lg mb-2">Disparo Anti-Ban</h3>
+                    <p class="text-gray-400 text-sm">Delays inteligentes, pausas estratégicas, limites por idade do chip. Proteção total.</p>
+                </div>
+
+                <div class="scroll-reveal feature-card bg-dark-800/50 border border-white/5 rounded-2xl p-8 transition-all duration-300" style="animation-delay: 0.3s;">
+                    <div class="w-14 h-14 rounded-2xl bg-cyan-600/20 flex items-center justify-center mb-5">
+                        <svg class="w-7 h-7 text-cyan-400" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5M16.5 12L12 16.5m0 0L7.5 12m4.5 4.5V3"/></svg>
+                    </div>
+                    <h3 class="text-white font-bold text-lg mb-2">Exportação CSV</h3>
+                    <p class="text-gray-400 text-sm">Exporte todos os leads para planilha ou importe no seu CRM favorito com um clique.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ============================================ -->
+    <!-- SEÇÃO 10: GARANTIA — COM IMAGEM -->
+    <!-- ============================================ -->
+    <section class="py-24 relative overflow-hidden">
+        <div class="max-w-7xl mx-auto px-6">
+            <div class="grid lg:grid-cols-2 gap-16 items-center">
+                <!-- Text -->
+                <div class="scroll-reveal">
+                    <span class="inline-block text-green-400 text-sm font-bold uppercase tracking-widest mb-4">Risco zero</span>
+                    <h2 class="text-4xl md:text-5xl font-black text-white leading-tight mb-6">
+                        Garantia de<br>
+                        <span class="text-green-400">7 dias.</span><br>
+                        <span class="text-gray-400 text-3xl">Ou seu dinheiro de volta.</span>
+                    </h2>
+                    <p class="text-lg text-gray-400 leading-relaxed mb-6">
+                        Estamos <strong class="text-white">tão confiantes</strong> no BuscaLeads que te damos 7 dias completos para testar. Se não gerar resultado, devolvemos cada centavo. Sem perguntas. Sem burocracia.
+                    </p>
+                    <div class="bg-green-950/30 border border-green-900/30 rounded-2xl p-6">
+                        <p class="text-green-300 font-semibold mb-3">O que isso significa na prática:</p>
+                        <ul class="space-y-2 text-gray-400 text-sm">
+                            <li class="flex items-center gap-2">
+                                <svg class="w-4 h-4 text-green-400 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/></svg>
+                                Acesso completo a todas as funcionalidades
+                            </li>
+                            <li class="flex items-center gap-2">
+                                <svg class="w-4 h-4 text-green-400 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/></svg>
+                                Reembolso em até 24h úteis
+                            </li>
+                            <li class="flex items-center gap-2">
+                                <svg class="w-4 h-4 text-green-400 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/></svg>
+                                Sem perguntas, sem justificativas
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Image -->
+                <div class="scroll-reveal img-overlay" style="animation-delay: 0.2s;">
+                    <img src="https://images.unsplash.com/photo-1553729459-uj-unsplash?w=700&h=500&fit=crop" alt="" class="w-full h-[500px] object-cover rounded-2xl" onerror="this.src='https://images.unsplash.com/photo-1556745757-8d76bdb6984b?w=700&h=500&fit=crop'">
+                    <div class="absolute inset-0 flex items-center justify-center z-10">
+                        <div class="text-center">
+                            <div class="w-32 h-32 mx-auto rounded-full border-4 border-green-400/50 bg-green-950/50 backdrop-blur-sm flex items-center justify-center mb-4">
+                                <svg class="w-16 h-16 text-green-400" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75m-3-7.036A11.959 11.959 0 013.598 6 11.99 11.99 0 003 9.749c0 5.592 3.824 10.29 9 11.623 5.176-1.332 9-6.03 9-11.622 0-1.31-.21-2.571-.598-3.751h-.152c-3.196 0-6.1-1.248-8.25-3.285z"/></svg>
+                            </div>
+                            <p class="text-white font-black text-2xl">GARANTIA TOTAL</p>
+                            <p class="text-green-400 font-bold">7 Dias — Risco Zero</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ============================================ -->
+    <!-- SEÇÃO 11: PREÇOS — SEM IMAGEM -->
+    <!-- ============================================ -->
+    <section id="preco" class="py-24 relative">
+        <div class="absolute inset-0 bg-gradient-to-b from-transparent via-brand-950/10 to-transparent"></div>
+        <div class="max-w-6xl mx-auto px-6 relative z-10">
+            <div class="text-center mb-4 scroll-reveal">
+                <span class="inline-block text-brand-400 text-sm font-bold uppercase tracking-widest mb-4">Investimento</span>
+                <h2 class="text-4xl md:text-5xl font-black text-white">
+                    Quanto custa <span class="text-red-400">NÃO</span> ter<br><span class="gradient-text">o BuscaLeads?</span>
+                </h2>
+                <p class="text-gray-400 text-lg mt-4 max-w-2xl mx-auto">Um SDR custa R$3.000/mês + encargos. O BuscaLeads faz o trabalho de 5 SDRs por uma fração do preço.</p>
+            </div>
+
+            <!-- Pricing calculator -->
+            <div class="scroll-reveal text-center mb-16 bg-red-950/20 border border-red-900/20 rounded-2xl p-6 max-w-xl mx-auto">
+                <p class="text-gray-400 text-sm mb-2">Custo de NÃO usar o BuscaLeads:</p>
+                <div class="text-4xl font-black text-red-400">R$15.000+<span class="text-lg text-gray-500">/mês</span></div>
+                <p class="text-gray-500 text-xs mt-2">5 SDRs × R$3.000 (salário + encargos)</p>
+            </div>
+
+            <div class="grid md:grid-cols-3 gap-8">
+                <!-- Starter -->
+                <div class="scroll-reveal gradient-border p-8" style="animation-delay: 0.1s;">
+                    <div class="text-brand-400 font-bold text-sm uppercase tracking-widest mb-2">Starter</div>
+                    <div class="text-gray-500 text-sm mb-6">Para quem está começando</div>
+                    <div class="mb-6">
+                        <span class="text-gray-500 strikethrough text-lg">R$297</span>
+                        <div class="text-5xl font-black text-white">R$97<span class="text-lg text-gray-500 font-normal">/mês</span></div>
+                    </div>
+                    <ul class="space-y-3 mb-8">
+                        <li class="flex items-center gap-3 text-gray-300 text-sm">
+                            <svg class="w-5 h-5 text-brand-400 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/></svg>
+                            100 buscas/mês
+                        </li>
+                        <li class="flex items-center gap-3 text-gray-300 text-sm">
+                            <svg class="w-5 h-5 text-brand-400 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/></svg>
+                            Qualificação automática
+                        </li>
+                        <li class="flex items-center gap-3 text-gray-300 text-sm">
+                            <svg class="w-5 h-5 text-brand-400 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/></svg>
+                            Exportação CSV
+                        </li>
+                        <li class="flex items-center gap-3 text-gray-300 text-sm">
+                            <svg class="w-5 h-5 text-brand-400 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/></svg>
+                            Suporte por email
+                        </li>
+                    </ul>
+                    <a href="#" class="block text-center border border-brand-600 text-brand-400 hover:bg-brand-600 hover:text-white px-8 py-4 rounded-xl font-bold transition-all duration-300">
+                        Começar Agora
+                    </a>
+                </div>
+
+                <!-- Pro (Popular) -->
+                <div class="scroll-reveal pricing-popular rounded-2xl p-8 bg-dark-800 relative" style="animation-delay: 0.2s;">
+                    <div class="absolute -top-4 left-1/2 -translate-x-1/2 bg-brand-600 text-white text-xs font-bold uppercase tracking-widest px-6 py-1.5 rounded-full">
+                        Mais Popular
+                    </div>
+                    <div class="text-brand-400 font-bold text-sm uppercase tracking-widest mb-2">Profissional</div>
+                    <div class="text-gray-500 text-sm mb-6">Para equipes que querem escalar</div>
+                    <div class="mb-6">
+                        <span class="text-gray-500 strikethrough text-lg">R$597</span>
+                        <div class="text-5xl font-black text-white">R$247<span class="text-lg text-gray-500 font-normal">/mês</span></div>
+                    </div>
+                    <ul class="space-y-3 mb-8">
+                        <li class="flex items-center gap-3 text-gray-300 text-sm">
+                            <svg class="w-5 h-5 text-brand-400 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/></svg>
+                            <strong class="text-white">Buscas ilimitadas</strong>
+                        </li>
+                        <li class="flex items-center gap-3 text-gray-300 text-sm">
+                            <svg class="w-5 h-5 text-brand-400 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/></svg>
+                            Qualificação + Enriquecimento CNPJ
+                        </li>
+                        <li class="flex items-center gap-3 text-gray-300 text-sm">
+                            <svg class="w-5 h-5 text-brand-400 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/></svg>
+                            <strong class="text-white">Disparo WhatsApp</strong> (500 msgs/dia)
+                        </li>
+                        <li class="flex items-center gap-3 text-gray-300 text-sm">
+                            <svg class="w-5 h-5 text-brand-400 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/></svg>
+                            Aquecimento de chip incluso
+                        </li>
+                        <li class="flex items-center gap-3 text-gray-300 text-sm">
+                            <svg class="w-5 h-5 text-brand-400 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/></svg>
+                            Suporte prioritário WhatsApp
+                        </li>
+                    </ul>
+                    <a href="#" class="cta-button block text-center bg-brand-600 hover:bg-brand-500 text-white px-8 py-4 rounded-xl font-bold animate-glow">
+                        Quero o Profissional
+                    </a>
+                    <p class="text-center text-gray-500 text-xs mt-3">Economia de R$14.753/mês vs. contratar SDRs</p>
+                </div>
+
+                <!-- Enterprise -->
+                <div class="scroll-reveal gradient-border p-8" style="animation-delay: 0.3s;">
+                    <div class="text-brand-400 font-bold text-sm uppercase tracking-widest mb-2">Enterprise</div>
+                    <div class="text-gray-500 text-sm mb-6">Para operações em escala</div>
+                    <div class="mb-6">
+                        <div class="text-5xl font-black text-white">Sob<span class="text-lg text-gray-500 font-normal"> consulta</span></div>
+                    </div>
+                    <ul class="space-y-3 mb-8">
+                        <li class="flex items-center gap-3 text-gray-300 text-sm">
+                            <svg class="w-5 h-5 text-brand-400 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/></svg>
+                            Tudo do Profissional
+                        </li>
+                        <li class="flex items-center gap-3 text-gray-300 text-sm">
+                            <svg class="w-5 h-5 text-brand-400 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/></svg>
+                            <strong class="text-white">API dedicada</strong>
+                        </li>
+                        <li class="flex items-center gap-3 text-gray-300 text-sm">
+                            <svg class="w-5 h-5 text-brand-400 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/></svg>
+                            Multi-usuários ilimitados
+                        </li>
+                        <li class="flex items-center gap-3 text-gray-300 text-sm">
+                            <svg class="w-5 h-5 text-brand-400 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/></svg>
+                            Onboarding dedicado
+                        </li>
+                        <li class="flex items-center gap-3 text-gray-300 text-sm">
+                            <svg class="w-5 h-5 text-brand-400 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/></svg>
+                            SLA 99.9% uptime
+                        </li>
+                    </ul>
+                    <a href="#" class="block text-center border border-brand-600 text-brand-400 hover:bg-brand-600 hover:text-white px-8 py-4 rounded-xl font-bold transition-all duration-300">
+                        Falar com Vendas
+                    </a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ============================================ -->
+    <!-- SEÇÃO 12: FAQ — COM IMAGEM -->
+    <!-- ============================================ -->
+    <section class="py-24 relative overflow-hidden">
+        <div class="max-w-7xl mx-auto px-6">
+            <div class="grid lg:grid-cols-2 gap-16 items-start">
+                <!-- Image -->
+                <div class="scroll-reveal img-overlay lg:sticky lg:top-32">
+                    <img src="https://images.unsplash.com/photo-1553877522-43269d4ea984?w=700&h=600&fit=crop" alt="Suporte ao cliente" class="w-full h-[500px] object-cover rounded-2xl">
+                    <div class="absolute bottom-6 left-6 right-6 z-10 bg-dark-900/90 backdrop-blur-sm rounded-xl p-4 border border-brand-800/30">
+                        <p class="text-brand-400 font-bold text-sm">AINDA TEM DÚVIDAS?</p>
+                        <p class="text-white text-sm mt-1">Fale com nossa equipe pelo WhatsApp. Respondemos em menos de 2 minutos.</p>
+                    </div>
+                </div>
+
+                <!-- FAQ -->
+                <div class="scroll-reveal" style="animation-delay: 0.2s;">
+                    <span class="inline-block text-brand-400 text-sm font-bold uppercase tracking-widest mb-4">Perguntas frequentes</span>
+                    <h2 class="text-4xl font-black text-white mb-10">
+                        Tudo que você precisa saber.
+                    </h2>
+
+                    <div class="space-y-4">
+                        <details class="group bg-dark-800/50 border border-white/5 rounded-xl overflow-hidden" open>
+                            <summary class="flex items-center justify-between p-6 cursor-pointer">
+                                <span class="text-white font-semibold pr-4">Funciona para qualquer segmento?</span>
+                                <svg class="w-5 h-5 text-brand-400 flex-shrink-0 group-open:rotate-180 transition-transform" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5"/></svg>
+                            </summary>
+                            <div class="px-6 pb-6 text-gray-400 text-sm">
+                                Sim. Se existe no Google Maps, o BuscaLeads encontra. Restaurantes, clínicas, escritórios, lojas, indústrias — qualquer negócio com presença online.
+                            </div>
+                        </details>
+
+                        <details class="group bg-dark-800/50 border border-white/5 rounded-xl overflow-hidden">
+                            <summary class="flex items-center justify-between p-6 cursor-pointer">
+                                <span class="text-white font-semibold pr-4">Meu WhatsApp não vai ser banido?</span>
+                                <svg class="w-5 h-5 text-brand-400 flex-shrink-0 group-open:rotate-180 transition-transform" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5"/></svg>
+                            </summary>
+                            <div class="px-6 pb-6 text-gray-400 text-sm">
+                                Nosso sistema anti-ban usa delays inteligentes (15-60s entre msgs), pausas longas a cada 20 mensagens, limites baseados na idade do chip e aquecimento gradual de 21 dias. É o sistema mais seguro do mercado.
+                            </div>
+                        </details>
+
+                        <details class="group bg-dark-800/50 border border-white/5 rounded-xl overflow-hidden">
+                            <summary class="flex items-center justify-between p-6 cursor-pointer">
+                                <span class="text-white font-semibold pr-4">Preciso de conhecimento técnico?</span>
+                                <svg class="w-5 h-5 text-brand-400 flex-shrink-0 group-open:rotate-180 transition-transform" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5"/></svg>
+                            </summary>
+                            <div class="px-6 pb-6 text-gray-400 text-sm">
+                                Zero. Se você sabe usar WhatsApp, sabe usar o BuscaLeads. Interface intuitiva, sem curva de aprendizado. E se precisar de ajuda, nosso suporte responde em minutos.
+                            </div>
+                        </details>
+
+                        <details class="group bg-dark-800/50 border border-white/5 rounded-xl overflow-hidden">
+                            <summary class="flex items-center justify-between p-6 cursor-pointer">
+                                <span class="text-white font-semibold pr-4">Os dados são reais e atualizados?</span>
+                                <svg class="w-5 h-5 text-brand-400 flex-shrink-0 group-open:rotate-180 transition-transform" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5"/></svg>
+                            </summary>
+                            <div class="px-6 pb-6 text-gray-400 text-sm">
+                                100%. Buscamos direto do Google Maps (dados atualizados) e enriquecemos via Receita Federal (BrasilAPI). WhatsApp é validado em tempo real antes de qualquer disparo.
+                            </div>
+                        </details>
+
+                        <details class="group bg-dark-800/50 border border-white/5 rounded-xl overflow-hidden">
+                            <summary class="flex items-center justify-between p-6 cursor-pointer">
+                                <span class="text-white font-semibold pr-4">E se eu não gostar? Tem reembolso?</span>
+                                <svg class="w-5 h-5 text-brand-400 flex-shrink-0 group-open:rotate-180 transition-transform" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5"/></svg>
+                            </summary>
+                            <div class="px-6 pb-6 text-gray-400 text-sm">
+                                Garantia incondicional de 7 dias. Não gostou? Devolvemos 100% do valor. Sem perguntas, sem burocracia, sem letras miúdas. Simples assim.
+                            </div>
+                        </details>
+
+                        <details class="group bg-dark-800/50 border border-white/5 rounded-xl overflow-hidden">
+                            <summary class="flex items-center justify-between p-6 cursor-pointer">
+                                <span class="text-white font-semibold pr-4">Posso cancelar a qualquer momento?</span>
+                                <svg class="w-5 h-5 text-brand-400 flex-shrink-0 group-open:rotate-180 transition-transform" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5"/></svg>
+                            </summary>
+                            <div class="px-6 pb-6 text-gray-400 text-sm">
+                                Sim. Sem fidelidade, sem multa. Cancele quando quiser com um clique. Mas spoiler: ninguém cancela depois de ver os resultados.
+                            </div>
+                        </details>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ============================================ -->
+    <!-- SEÇÃO 13: CTA FINAL — SEM IMAGEM -->
+    <!-- ============================================ -->
+    <section class="py-32 relative overflow-hidden">
+        <div class="absolute inset-0 bg-gradient-to-b from-dark-900 via-brand-950/20 to-dark-900"></div>
+        <div class="hero-glow top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2"></div>
+        <div class="absolute inset-0" style="background-image: radial-gradient(rgba(43, 143, 255, 0.03) 1px, transparent 1px); background-size: 30px 30px;"></div>
+
+        <div class="max-w-4xl mx-auto px-6 text-center relative z-10">
+            <div class="scroll-reveal">
+                <h2 class="text-5xl md:text-6xl lg:text-7xl font-black text-white leading-tight mb-6">
+                    A decisão é<br>
+                    <span class="gradient-text">sua.</span>
+                </h2>
+                <p class="text-xl text-gray-400 max-w-2xl mx-auto mb-4 leading-relaxed">
+                    Você pode fechar essa página e continuar fazendo tudo manual. Ou pode dar o primeiro passo para
+                    <strong class="text-white">nunca mais perder um cliente</strong> para o concorrente.
+                </p>
+                <p class="text-2xl font-bold text-white mb-12">
+                    Daqui a 30 dias, você vai se arrepender de<br>
+                    <span class="text-red-400">não ter começado hoje.</span>
+                </p>
+
+                <a href="#preco" class="cta-button inline-flex items-center gap-3 bg-brand-600 hover:bg-brand-500 text-white px-14 py-6 rounded-2xl font-bold text-xl animate-glow">
+                    Começar Agora — Risco Zero
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M13 7l5 5m0 0l-5 5m5-5H6"/></svg>
+                </a>
+
+                <div class="mt-8 flex items-center justify-center gap-6 text-sm text-gray-500">
+                    <span class="flex items-center gap-2">
+                        <svg class="w-4 h-4 text-green-400" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/></svg>
+                        Garantia 7 dias
+                    </span>
+                    <span class="flex items-center gap-2">
+                        <svg class="w-4 h-4 text-green-400" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/></svg>
+                        Sem fidelidade
+                    </span>
+                    <span class="flex items-center gap-2">
+                        <svg class="w-4 h-4 text-green-400" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/></svg>
+                        Suporte WhatsApp
+                    </span>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- FOOTER -->
+    <footer class="border-t border-white/5 py-12">
+        <div class="max-w-7xl mx-auto px-6">
+            <div class="grid md:grid-cols-4 gap-8 mb-12">
+                <div>
+                    <div class="flex items-center gap-2 mb-4">
+                        <div class="w-8 h-8 rounded-lg bg-gradient-to-br from-brand-500 to-brand-700 flex items-center justify-center">
+                            <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z"/></svg>
+                        </div>
+                        <span class="text-lg font-bold text-white">Busca<span class="text-brand-400">Leads</span></span>
+                    </div>
+                    <p class="text-gray-500 text-sm">A plataforma #1 de prospecção B2B automatizada do Brasil.</p>
+                </div>
+                <div>
+                    <h4 class="text-white font-bold text-sm mb-4">Produto</h4>
+                    <ul class="space-y-2 text-gray-500 text-sm">
+                        <li><a href="#" class="hover:text-white transition-colors">Funcionalidades</a></li>
+                        <li><a href="#" class="hover:text-white transition-colors">Preços</a></li>
+                        <li><a href="#" class="hover:text-white transition-colors">API</a></li>
+                        <li><a href="#" class="hover:text-white transition-colors">Integrações</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h4 class="text-white font-bold text-sm mb-4">Empresa</h4>
+                    <ul class="space-y-2 text-gray-500 text-sm">
+                        <li><a href="#" class="hover:text-white transition-colors">Sobre</a></li>
+                        <li><a href="#" class="hover:text-white transition-colors">Blog</a></li>
+                        <li><a href="#" class="hover:text-white transition-colors">Carreiras</a></li>
+                        <li><a href="#" class="hover:text-white transition-colors">Contato</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h4 class="text-white font-bold text-sm mb-4">Legal</h4>
+                    <ul class="space-y-2 text-gray-500 text-sm">
+                        <li><a href="#" class="hover:text-white transition-colors">Termos de Uso</a></li>
+                        <li><a href="#" class="hover:text-white transition-colors">Política de Privacidade</a></li>
+                        <li><a href="#" class="hover:text-white transition-colors">LGPD</a></li>
+                    </ul>
+                </div>
+            </div>
+            <div class="border-t border-white/5 pt-8 flex flex-col md:flex-row items-center justify-between gap-4">
+                <p class="text-gray-600 text-sm">&copy; 2026 BuscaLeads. Todos os direitos reservados.</p>
+                <p class="text-gray-600 text-xs">CNPJ: XX.XXX.XXX/0001-XX — buscaleads.site</p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Scroll Reveal Script -->
+    <script>
+        // Intersection Observer for scroll animations
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('visible');
+                }
+            });
+        }, { threshold: 0.1, rootMargin: '0px 0px -50px 0px' });
+
+        document.querySelectorAll('.scroll-reveal').forEach(el => observer.observe(el));
+
+        // Smooth scroll for anchor links
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                const target = document.querySelector(this.getAttribute('href'));
+                if (target) {
+                    target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                }
+            });
+        });
+
+        // Navbar background on scroll
+        const nav = document.querySelector('nav');
+        window.addEventListener('scroll', () => {
+            if (window.scrollY > 50) {
+                nav.classList.add('bg-dark-900/95');
+                nav.classList.remove('bg-dark-900/80');
+            } else {
+                nav.classList.remove('bg-dark-900/95');
+                nav.classList.add('bg-dark-900/80');
+            }
+        });
+
+        // Counter animation for stats
+        const counterObserver = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    const counters = entry.target.querySelectorAll('[data-count]');
+                    counters.forEach(counter => {
+                        const target = parseInt(counter.dataset.count);
+                        let current = 0;
+                        const increment = target / 60;
+                        const timer = setInterval(() => {
+                            current += increment;
+                            if (current >= target) {
+                                counter.textContent = target + '+';
+                                clearInterval(timer);
+                            } else {
+                                counter.textContent = Math.floor(current) + '+';
+                            }
+                        }, 20);
+                    });
+                    counterObserver.unobserve(entry.target);
+                }
+            });
+        }, { threshold: 0.5 });
+
+        document.querySelectorAll('.stat-card')?.forEach(card => {
+            const parent = card.parentElement;
+            if (parent) counterObserver.observe(parent);
+        });
+    </script>
+
+</body>
+</html>
