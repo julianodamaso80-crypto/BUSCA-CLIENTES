@@ -163,9 +163,14 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/6.0/howto/static-files/
 
 STATIC_URL = 'static/'
-STATIC_ROOT = BASE_DIR / 'staticfiles'
 STATICFILES_DIRS = [BASE_DIR / 'static'] if (BASE_DIR / 'static').exists() else []
-if not IS_VERCEL:
+
+if IS_VERCEL:
+    # Vercel: filesystem is read-only, use /tmp for collectstatic
+    STATIC_ROOT = '/tmp/staticfiles'
+    WHITENOISE_USE_FINDERS = True
+else:
+    STATIC_ROOT = BASE_DIR / 'staticfiles'
     STORAGES = {
         'staticfiles': {
             'BACKEND': 'whitenoise.storage.CompressedManifestStaticFilesStorage',
