@@ -31,7 +31,10 @@ SECRET_KEY = os.getenv('SECRET_KEY', 'django-insecure-change-me-in-production')
 IS_VERCEL = os.getenv('VERCEL', '') == '1'
 DEBUG = False if IS_VERCEL else os.getenv('DEBUG', 'True').lower() == 'true'
 
-ALLOWED_HOSTS = ['buscaleads.site', 'www.buscaleads.site', '.vercel.app', 'localhost', '127.0.0.1']
+if DEBUG:
+    ALLOWED_HOSTS = ['*']
+else:
+    ALLOWED_HOSTS = ['buscaleads.site', 'www.buscaleads.site', '.vercel.app', 'localhost', '127.0.0.1']
 
 
 # Application definition
