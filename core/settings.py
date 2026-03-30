@@ -61,8 +61,12 @@ try:
 except ImportError:
     pass
 
-if DEBUG:
-    INSTALLED_APPS.append('django_browser_reload')
+try:
+    import django_browser_reload
+    if DEBUG:
+        INSTALLED_APPS.append('django_browser_reload')
+except ImportError:
+    pass
 
 TAILWIND_APP_NAME = 'theme'
 
@@ -77,7 +81,7 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
 
-if DEBUG:
+if DEBUG and 'django_browser_reload' in INSTALLED_APPS:
     MIDDLEWARE.append('django_browser_reload.middleware.BrowserReloadMiddleware')
 
 INTERNAL_IPS = [
