@@ -27,11 +27,11 @@ load_dotenv(BASE_DIR / '.env')
 SECRET_KEY = os.getenv('SECRET_KEY', 'django-insecure-change-me-in-production')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = os.getenv('DEBUG', 'True').lower() == 'true'
+# Vercel sets VERCEL=1 automatically in their environment
+IS_VERCEL = os.getenv('VERCEL', '') == '1'
+DEBUG = False if IS_VERCEL else os.getenv('DEBUG', 'True').lower() == 'true'
 
-ALLOWED_HOSTS = os.getenv('ALLOWED_HOSTS', 'localhost,127.0.0.1').split(',')
-if not DEBUG:
-    ALLOWED_HOSTS += ['buscaleads.site', 'www.buscaleads.site', '.vercel.app']
+ALLOWED_HOSTS = ['buscaleads.site', 'www.buscaleads.site', '.vercel.app', 'localhost', '127.0.0.1']
 
 
 # Application definition
@@ -61,12 +61,13 @@ try:
 except ImportError:
     pass
 
-try:
-    import django_browser_reload
-    if DEBUG:
-        INSTALLED_APPS.append('django_browser_reload')
-except ImportError:
-    pass
+if not IS_VERCEL:
+    try:
+        import django_browser_reload
+        if DEBUG:
+            INSTALLED_APPS.append('django_browser_reload')
+    except ImportError:
+        pass
 
 TAILWIND_APP_NAME = 'theme'
 
@@ -81,7 +82,7 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
 
-if DEBUG and 'django_browser_reload' in INSTALLED_APPS:
+if not IS_VERCEL and DEBUG and 'django_browser_reload' in INSTALLED_APPS:
     MIDDLEWARE.append('django_browser_reload.middleware.BrowserReloadMiddleware')
 
 INTERNAL_IPS = [
