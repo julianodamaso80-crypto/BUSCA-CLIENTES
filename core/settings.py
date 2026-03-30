@@ -51,8 +51,15 @@ INSTALLED_APPS = [
     'clientes',
     'disparo',
     'aquecimento',
-    'context',
 ]
+
+# Context app requires heavy ML dependencies (chromadb, sentence-transformers)
+# Only load in development where full requirements are installed
+try:
+    import chromadb
+    INSTALLED_APPS.append('context')
+except ImportError:
+    pass
 
 if DEBUG:
     INSTALLED_APPS.append('django_browser_reload')
