@@ -1,0 +1,279 @@
+{% extends 'base.html' %}
+
+{% block title %}Lead - {{ cliente.nome }}{% endblock %}
+
+{% block content %}
+<div class="space-y-6">
+    <!-- Header -->
+    <div class="bg-white rounded-2xl shadow-lg p-6">
+        <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+            <div>
+                <h1 class="text-2xl font-bold text-gray-900">{{ cliente.nome }}</h1>
+                <p class="text-gray-600 mt-1">{{ cliente.categoria|default:"Sem categoria" }}</p>
+            </div>
+            <div class="flex flex-wrap gap-3">
+                {% if cliente.whatsapp %}
+                <a href="https://wa.me/{{ cliente.whatsapp|cut:'+' }}" target="_blank"
+                   class="inline-flex items-center px-4 py-2 bg-green-600 hover:bg-green-700 text-white font-semibold rounded-lg transition">
+                    <svg class="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 24 24">
+                        <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/>
+                    </svg>
+                    Enviar WhatsApp
+                </a>
+                {% endif %}
+                {% if cliente.website %}
+                <a href="{{ cliente.website }}" target="_blank"
+                   class="inline-flex items-center px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-lg transition">
+                    <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"></path>
+                    </svg>
+                    Abrir Website
+                </a>
+                {% endif %}
+                <a href="{% url 'leads_qualificados' cliente.busca.id %}"
+                   class="inline-flex items-center px-4 py-2 bg-gray-200 hover:bg-gray-300 text-gray-700 font-semibold rounded-lg transition">
+                    <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
+                    </svg>
+                    Voltar
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <!-- Coluna esquerda: Score -->
+        <div class="lg:col-span-1 space-y-6">
+            <!-- Score Card -->
+            <div class="bg-white rounded-2xl shadow-lg p-6 text-center">
+                <h2 class="text-lg font-bold text-gray-900 mb-4">Lead Score</h2>
+                <div class="relative inline-flex items-center justify-center w-32 h-32">
+                    <svg class="w-32 h-32 transform -rotate-90" viewBox="0 0 120 120">
+                        <circle cx="60" cy="60" r="54" fill="none" stroke="#e5e7eb" stroke-width="8"/>
+                        <circle cx="60" cy="60" r="54" fill="none"
+                                stroke="{% if cliente.lead_score >= 80 %}#ef4444{% elif cliente.lead_score >= 60 %}#eab308{% elif cliente.lead_score >= 40 %}#0ea5e9{% else %}#9ca3af{% endif %}"
+                                stroke-width="8"
+                                stroke-dasharray="{{ cliente.lead_score|floatformat:0 }}% 339.292"
+                                stroke-dashoffset="0"
+                                stroke-linecap="round"
+                                style="stroke-dasharray: {% widthratio cliente.lead_score 100 339 %} 339"/>
+                    </svg>
+                    <span class="absolute text-4xl font-bold {% if cliente.lead_score >= 80 %}text-red-600{% elif cliente.lead_score >= 60 %}text-yellow-600{% elif cliente.lead_score >= 40 %}text-sky-600{% else %}text-gray-400{% endif %}">
+                        {{ cliente.lead_score }}
+                    </span>
+                </div>
+                <div class="mt-4">
+                    {% if cliente.classificacao == 'quente' %}
+                        <span class="inline-flex items-center px-4 py-2 rounded-full text-sm font-bold bg-red-100 text-red-800">Lead Quente</span>
+                    {% elif cliente.classificacao == 'morno' %}
+                        <span class="inline-flex items-center px-4 py-2 rounded-full text-sm font-bold bg-yellow-100 text-yellow-800">Lead Morno</span>
+                    {% elif cliente.classificacao == 'frio' %}
+                        <span class="inline-flex items-center px-4 py-2 rounded-full text-sm font-bold bg-sky-100 text-sky-800">Lead Frio</span>
+                    {% else %}
+                        <span class="inline-flex items-center px-4 py-2 rounded-full text-sm font-bold bg-gray-100 text-gray-800">Descartado</span>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Detalhes do Scoring -->
+            <div class="bg-white rounded-2xl shadow-lg p-6">
+                <h2 class="text-lg font-bold text-gray-900 mb-4">Detalhes do Scoring</h2>
+                <div class="space-y-3">
+                    <!-- CNPJ Ativo -->
+                    <div class="flex items-center justify-between p-3 rounded-lg {% if cliente.score_detalhes.cnpj_ativo %}bg-green-50{% else %}bg-gray-50{% endif %}">
+                        <div class="flex items-center gap-2">
+                            {% if cliente.score_detalhes.cnpj_ativo %}
+                                <svg class="w-5 h-5 text-green-600" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path></svg>
+                            {% else %}
+                                <svg class="w-5 h-5 text-gray-400" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd"></path></svg>
+                            {% endif %}
+                            <span class="text-sm">CNPJ ativo</span>
+                        </div>
+                        <span class="text-sm font-bold">+{{ cliente.score_detalhes.cnpj_ativo|default:"0" }}</span>
+                    </div>
+                    <!-- WhatsApp -->
+                    <div class="flex items-center justify-between p-3 rounded-lg {% if cliente.score_detalhes.whatsapp_ativo %}bg-green-50{% else %}bg-gray-50{% endif %}">
+                        <div class="flex items-center gap-2">
+                            {% if cliente.score_detalhes.whatsapp_ativo %}
+                                <svg class="w-5 h-5 text-green-600" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path></svg>
+                            {% else %}
+                                <svg class="w-5 h-5 text-gray-400" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd"></path></svg>
+                            {% endif %}
+                            <span class="text-sm">WhatsApp ativo</span>
+                        </div>
+                        <span class="text-sm font-bold">+{{ cliente.score_detalhes.whatsapp_ativo|default:"0" }}</span>
+                    </div>
+                    <!-- Presenca Digital -->
+                    <div class="flex items-center justify-between p-3 rounded-lg {% if cliente.score_detalhes.presenca_digital %}bg-green-50{% else %}bg-gray-50{% endif %}">
+                        <div class="flex items-center gap-2">
+                            {% if cliente.score_detalhes.presenca_digital %}
+                                <svg class="w-5 h-5 text-green-600" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path></svg>
+                            {% else %}
+                                <svg class="w-5 h-5 text-gray-400" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd"></path></svg>
+                            {% endif %}
+                            <span class="text-sm">Presenca digital</span>
+                        </div>
+                        <span class="text-sm font-bold">+{{ cliente.score_detalhes.presenca_digital|default:"0" }}</span>
+                    </div>
+                    <!-- Porte -->
+                    <div class="flex items-center justify-between p-3 rounded-lg {% if cliente.score_detalhes.porte_compativel %}bg-green-50{% else %}bg-gray-50{% endif %}">
+                        <div class="flex items-center gap-2">
+                            {% if cliente.score_detalhes.porte_compativel %}
+                                <svg class="w-5 h-5 text-green-600" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path></svg>
+                            {% else %}
+                                <svg class="w-5 h-5 text-gray-400" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd"></path></svg>
+                            {% endif %}
+                            <span class="text-sm">Porte compativel</span>
+                        </div>
+                        <span class="text-sm font-bold">+{{ cliente.score_detalhes.porte_compativel|default:"0" }}</span>
+                    </div>
+                    <!-- Avaliacao -->
+                    <div class="flex items-center justify-between p-3 rounded-lg {% if cliente.score_detalhes.avaliacao_google %}bg-green-50{% else %}bg-gray-50{% endif %}">
+                        <div class="flex items-center gap-2">
+                            {% if cliente.score_detalhes.avaliacao_google %}
+                                <svg class="w-5 h-5 text-green-600" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path></svg>
+                            {% else %}
+                                <svg class="w-5 h-5 text-gray-400" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd"></path></svg>
+                            {% endif %}
+                            <span class="text-sm">Avaliacao Google</span>
+                        </div>
+                        <span class="text-sm font-bold">+{{ cliente.score_detalhes.avaliacao_google|default:"0" }}</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Coluna direita: Dados -->
+        <div class="lg:col-span-2 space-y-6">
+            <!-- Dados Google Maps -->
+            <div class="bg-white rounded-2xl shadow-lg p-6">
+                <h2 class="text-lg font-bold text-gray-900 mb-4 flex items-center gap-2">
+                    <svg class="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path>
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                    </svg>
+                    Dados Google Maps
+                </h2>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <p class="text-xs text-gray-500 uppercase">Telefone</p>
+                        <p class="text-sm font-medium text-gray-900">{{ cliente.telefone|default:"-" }}</p>
+                    </div>
+                    <div>
+                        <p class="text-xs text-gray-500 uppercase">WhatsApp</p>
+                        <p class="text-sm font-medium text-gray-900">
+                            {{ cliente.whatsapp|default:"-" }}
+                            {% if cliente.whatsapp_existe is True %}
+                                <span class="ml-1 text-green-600 text-xs">(verificado)</span>
+                            {% elif cliente.whatsapp_existe is False %}
+                                <span class="ml-1 text-red-600 text-xs">(sem WhatsApp)</span>
+                            {% endif %}
+                        </p>
+                    </div>
+                    <div>
+                        <p class="text-xs text-gray-500 uppercase">Email</p>
+                        <p class="text-sm font-medium text-gray-900">{{ cliente.email|default:"-" }}</p>
+                    </div>
+                    <div>
+                        <p class="text-xs text-gray-500 uppercase">Website</p>
+                        <p class="text-sm font-medium">
+                            {% if cliente.website %}
+                                <a href="{{ cliente.website }}" target="_blank" class="text-blue-600 hover:underline">{{ cliente.website|truncatechars:40 }}</a>
+                            {% else %}-{% endif %}
+                        </p>
+                    </div>
+                    <div class="md:col-span-2">
+                        <p class="text-xs text-gray-500 uppercase">Endereco</p>
+                        <p class="text-sm font-medium text-gray-900">{{ cliente.endereco|default:"-" }}</p>
+                        {% if cliente.cidade or cliente.estado %}
+                        <p class="text-sm text-gray-600">{{ cliente.cidade|default:"" }}{% if cliente.cidade and cliente.estado %} / {% endif %}{{ cliente.estado|default:"" }}</p>
+                        {% endif %}
+                    </div>
+                    <div>
+                        <p class="text-xs text-gray-500 uppercase">Avaliacao</p>
+                        <p class="text-sm font-medium text-gray-900">
+                            {% if cliente.avaliacao %}
+                                {{ cliente.avaliacao }} / 5.0 ({{ cliente.total_avaliacoes|default:0 }} avaliacoes)
+                            {% else %}-{% endif %}
+                        </p>
+                    </div>
+                    <div>
+                        <p class="text-xs text-gray-500 uppercase">Categoria</p>
+                        <p class="text-sm font-medium text-gray-900">{{ cliente.categoria|default:"-" }}</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Dados CNPJ -->
+            <div class="bg-white rounded-2xl shadow-lg p-6">
+                <h2 class="text-lg font-bold text-gray-900 mb-4 flex items-center gap-2">
+                    <svg class="w-5 h-5 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"></path>
+                    </svg>
+                    Dados CNPJ (Receita Federal)
+                </h2>
+                {% if cliente.cnpj %}
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <p class="text-xs text-gray-500 uppercase">CNPJ</p>
+                        <p class="text-sm font-medium text-gray-900">{{ cliente.cnpj }}</p>
+                    </div>
+                    <div>
+                        <p class="text-xs text-gray-500 uppercase">Situacao Cadastral</p>
+                        <p class="text-sm font-medium {% if cliente.situacao_cadastral == 'ATIVA' %}text-green-600{% else %}text-red-600{% endif %}">
+                            {{ cliente.situacao_cadastral|default:"-" }}
+                        </p>
+                    </div>
+                    <div class="md:col-span-2">
+                        <p class="text-xs text-gray-500 uppercase">Razao Social</p>
+                        <p class="text-sm font-medium text-gray-900">{{ cliente.razao_social|default:"-" }}</p>
+                    </div>
+                    <div class="md:col-span-2">
+                        <p class="text-xs text-gray-500 uppercase">Nome Fantasia</p>
+                        <p class="text-sm font-medium text-gray-900">{{ cliente.nome_fantasia|default:"-" }}</p>
+                    </div>
+                    <div>
+                        <p class="text-xs text-gray-500 uppercase">CNAE Principal</p>
+                        <p class="text-sm font-medium text-gray-900">{{ cliente.cnae_principal|default:"-" }}</p>
+                        {% if cliente.cnae_descricao %}
+                        <p class="text-xs text-gray-600">{{ cliente.cnae_descricao }}</p>
+                        {% endif %}
+                    </div>
+                    <div>
+                        <p class="text-xs text-gray-500 uppercase">Porte</p>
+                        <p class="text-sm font-medium text-gray-900">{{ cliente.porte|default:"-" }}</p>
+                    </div>
+                    <div>
+                        <p class="text-xs text-gray-500 uppercase">Capital Social</p>
+                        <p class="text-sm font-medium text-gray-900">
+                            {% if cliente.capital_social %}R$ {{ cliente.capital_social|floatformat:2 }}{% else %}-{% endif %}
+                        </p>
+                    </div>
+                    <div>
+                        <p class="text-xs text-gray-500 uppercase">Data de Abertura</p>
+                        <p class="text-sm font-medium text-gray-900">{{ cliente.data_abertura|date:"d/m/Y"|default:"-" }}</p>
+                    </div>
+                    <div class="md:col-span-2">
+                        <p class="text-xs text-gray-500 uppercase">Natureza Juridica</p>
+                        <p class="text-sm font-medium text-gray-900">{{ cliente.natureza_juridica|default:"-" }}</p>
+                    </div>
+                </div>
+                {% else %}
+                <div class="text-center py-6 text-gray-500">
+                    <p>CNPJ nao disponivel para este lead.</p>
+                    <p class="text-sm mt-1">O enriquecimento com CNPJ requer que o campo esteja preenchido.</p>
+                </div>
+                {% endif %}
+            </div>
+
+            {% if cliente.erro_enriquecimento %}
+            <!-- Erros -->
+            <div class="bg-red-50 border border-red-200 rounded-2xl p-4">
+                <h3 class="text-sm font-bold text-red-800">Erro no enriquecimento:</h3>
+                <p class="text-sm text-red-700 mt-1">{{ cliente.erro_enriquecimento }}</p>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

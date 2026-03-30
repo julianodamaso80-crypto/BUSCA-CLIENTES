@@ -42,8 +42,14 @@ class BuscaCliente(models.Model):
     apenas_whatsapp = models.BooleanField(default=False, verbose_name='Apenas com WhatsApp')
     apenas_email = models.BooleanField(default=False, verbose_name='Apenas com Email')
     apenas_endereco = models.BooleanField(default=False, verbose_name='Apenas com Endereço')
+    max_resultados = models.IntegerField(default=50, verbose_name='Max. Resultados')
     data_busca = models.DateTimeField(auto_now_add=True)
     total_resultados = models.IntegerField(default=0)
+
+    # === CAMPOS DE ENRIQUECIMENTO ===
+    enriquecida = models.BooleanField(default=False)
+    data_enriquecimento = models.DateTimeField(blank=True, null=True)
+    total_qualificados = models.IntegerField(default=0)
 
     class Meta:
         ordering = ['-data_busca']
@@ -68,6 +74,44 @@ class ClienteEncontrado(models.Model):
     total_avaliacoes = models.IntegerField(blank=True, null=True)
     categoria = models.CharField(max_length=255, blank=True, null=True)
     data_cadastro = models.DateTimeField(auto_now_add=True)
+
+    # === CAMPOS DE ENRIQUECIMENTO CNPJ ===
+    cnpj = models.CharField(max_length=20, blank=True, null=True, db_index=True)
+    razao_social = models.CharField(max_length=255, blank=True, null=True)
+    nome_fantasia = models.CharField(max_length=255, blank=True, null=True)
+    situacao_cadastral = models.CharField(max_length=50, blank=True, null=True)
+    cnae_principal = models.CharField(max_length=10, blank=True, null=True)
+    cnae_descricao = models.CharField(max_length=255, blank=True, null=True)
+    porte = models.CharField(max_length=50, blank=True, null=True)
+    capital_social = models.DecimalField(max_digits=15, decimal_places=2, blank=True, null=True)
+    data_abertura = models.DateField(blank=True, null=True)
+    natureza_juridica = models.CharField(max_length=255, blank=True, null=True)
+
+    # === CAMPOS DE QUALIFICACAO ===
+    lead_score = models.IntegerField(default=0, db_index=True)
+    score_detalhes = models.JSONField(default=dict, blank=True)
+    classificacao = models.CharField(
+        max_length=20,
+        choices=[
+            ('quente', 'Lead Quente'),
+            ('morno', 'Lead Morno'),
+            ('frio', 'Lead Frio'),
+            ('descartado', 'Descartado'),
+        ],
+        default='frio',
+        db_index=True,
+    )
+
+    # === CAMPOS DE VALIDACAO ===
+    whatsapp_validado = models.BooleanField(default=False)
+    whatsapp_existe = models.BooleanField(null=True, blank=True)
+    tem_website = models.BooleanField(null=True, blank=True)
+    tem_redes_sociais = models.BooleanField(null=True, blank=True)
+
+    # === STATUS DE ENRIQUECIMENTO ===
+    enriquecido = models.BooleanField(default=False)
+    data_enriquecimento = models.DateTimeField(blank=True, null=True)
+    erro_enriquecimento = models.TextField(blank=True, null=True)
 
     class Meta:
         ordering = ['nome']

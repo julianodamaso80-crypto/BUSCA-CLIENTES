@@ -21,7 +21,7 @@ class GoogleMapsService:
         run_input = {
             "searchStringsArray": [busca.termo_busca],
             "locationQuery": localizacao,
-            "maxCrawledPlacesPerSearch": 50,
+            "maxCrawledPlacesPerSearch": busca.max_resultados,
             "language": "pt-BR",
             "skipClosedPlaces": True,
         }

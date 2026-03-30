@@ -6,6 +6,7 @@ from django.db.models import Sum, Count
 from django.db.models.functions import TruncDate
 from .models import Estado, Cidade, BuscaCliente, ClienteEncontrado
 from .services import GoogleMapsService
+from .enrichment import EnrichmentPipeline
 import csv
 from datetime import datetime, timedelta
 
@@ -54,6 +55,7 @@ def buscar_clientes(request):
         apenas_whatsapp = request.POST.get('apenas_whatsapp') == '1'
         apenas_email = request.POST.get('apenas_email') == '1'
         apenas_endereco = request.POST.get('apenas_endereco') == '1'
+        max_resultados = int(request.POST.get('max_resultados', 50))
 
         # Validações
         if not termo_busca:
@@ -70,6 +72,7 @@ def buscar_clientes(request):
             apenas_whatsapp=apenas_whatsapp,
             apenas_email=apenas_email,
             apenas_endereco=apenas_endereco,
+            max_resultados=max_resultados,
         )
 
         # Executa a busca
@@ -155,6 +158,123 @@ def exportar_csv(request, busca_id):
             cliente.avaliacao or '',
             cliente.total_avaliacoes or '',
             cliente.categoria or '',
+        ])
+
+    return response
+
+
+@login_required
+def enriquecer_busca(request, busca_id):
+    """
+    View para iniciar o enriquecimento dos leads de uma busca.
+    GET: mostra preview com opcoes
+    POST: executa o enriquecimento
+    """
+    busca = get_object_or_404(BuscaCliente, id=busca_id, usuario=request.user)
+
+    if request.method == 'POST':
+        validar_whatsapp = request.POST.get('validar_whatsapp') == 'on'
+
+        pipeline = EnrichmentPipeline()
+        stats = pipeline.enriquecer_busca(busca, validar_whatsapp=validar_whatsapp)
+
+        messages.success(
+            request,
+            f"Enriquecimento concluido! {stats['enriquecidos']} leads processados. "
+            f"{stats['quentes']} quentes | {stats['mornos']} mornos | {stats['frios']} frios"
+        )
+        return redirect('leads_qualificados', busca_id=busca.id)
+
+    # GET -- mostra preview
+    total_clientes = busca.clientes.count()
+    total_com_telefone = busca.clientes.filter(whatsapp__isnull=False).exclude(whatsapp='').count()
+    total_com_cnpj = busca.clientes.filter(cnpj__isnull=False).exclude(cnpj='').count()
+    total_ja_enriquecidos = busca.clientes.filter(enriquecido=True).count()
+
+    context = {
+        'busca': busca,
+        'total_clientes': total_clientes,
+        'total_com_telefone': total_com_telefone,
+        'total_com_cnpj': total_com_cnpj,
+        'total_pendentes': total_clientes - total_ja_enriquecidos,
+        'ja_enriquecida': busca.enriquecida,
+    }
+    return render(request, 'clientes/enriquecer.html', context)
+
+
+@login_required
+def leads_qualificados(request, busca_id):
+    """View que mostra leads qualificados com filtros por classificacao."""
+    busca = get_object_or_404(BuscaCliente, id=busca_id, usuario=request.user)
+
+    classificacao = request.GET.get('classificacao', 'todos')
+    clientes = busca.clientes.filter(enriquecido=True)
+
+    if classificacao != 'todos':
+        clientes = clientes.filter(classificacao=classificacao)
+
+    clientes = clientes.order_by('-lead_score')
+
+    stats = {
+        'total': busca.clientes.filter(enriquecido=True).count(),
+        'quentes': busca.clientes.filter(classificacao='quente').count(),
+        'mornos': busca.clientes.filter(classificacao='morno').count(),
+        'frios': busca.clientes.filter(classificacao='frio').count(),
+        'descartados': busca.clientes.filter(classificacao='descartado').count(),
+    }
+
+    context = {
+        'busca': busca,
+        'clientes': clientes,
+        'classificacao_atual': classificacao,
+        'stats': stats,
+    }
+    return render(request, 'clientes/leads_qualificados.html', context)
+
+
+@login_required
+def detalhe_lead(request, cliente_id):
+    """View de detalhe de um lead com todos os dados de enriquecimento."""
+    cliente = get_object_or_404(
+        ClienteEncontrado,
+        id=cliente_id,
+        busca__usuario=request.user
+    )
+    context = {'cliente': cliente}
+    return render(request, 'clientes/detalhe_lead.html', context)
+
+
+@login_required
+def exportar_qualificados_csv(request, busca_id):
+    """Exporta leads qualificados (score >= 60) como CSV."""
+    busca = get_object_or_404(BuscaCliente, id=busca_id, usuario=request.user)
+
+    classificacao = request.GET.get('classificacao', 'todos')
+    clientes = busca.clientes.filter(enriquecido=True)
+    if classificacao != 'todos':
+        clientes = clientes.filter(classificacao=classificacao)
+    clientes = clientes.order_by('-lead_score')
+
+    response = HttpResponse(content_type='text/csv')
+    response['Content-Disposition'] = f'attachment; filename="leads_qualificados_{busca_id}.csv"'
+    response.write('\ufeff')
+
+    writer = csv.writer(response, delimiter=';')
+    writer.writerow([
+        'Nome', 'Score', 'Classificacao', 'Telefone', 'WhatsApp', 'WhatsApp Validado',
+        'Email', 'CNPJ', 'Razao Social', 'Situacao', 'CNAE', 'Porte',
+        'Endereco', 'Cidade', 'Estado', 'Website', 'Avaliacao',
+    ])
+
+    for c in clientes:
+        writer.writerow([
+            c.nome, c.lead_score, c.get_classificacao_display(),
+            c.telefone or '', c.whatsapp or '',
+            'Sim' if c.whatsapp_existe else ('Nao' if c.whatsapp_existe is False else '-'),
+            c.email or '', c.cnpj or '', c.razao_social or '',
+            c.situacao_cadastral or '', c.cnae_descricao or '', c.porte or '',
+            c.endereco or '', c.cidade or '', c.estado or '',
+            c.website or '', c.avaliacao or '',
         ])
 
     return response

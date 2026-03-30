@@ -1,0 +1,142 @@
+{% extends 'base.html' %}
+
+{% block title %}Enriquecer Leads - {{ busca.termo_busca }}{% endblock %}
+
+{% block content %}
+<div class="space-y-6">
+    <!-- Header -->
+    <div class="bg-white rounded-2xl shadow-lg p-6">
+        <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+            <div>
+                <h1 class="text-2xl font-bold text-gray-900">Enriquecer e Qualificar Leads</h1>
+                <p class="text-gray-600 mt-1">
+                    Busca: <span class="font-semibold">"{{ busca.termo_busca }}"</span>
+                    {% if busca.cidade %}em {{ busca.cidade.nome }}/{{ busca.estado.sigla }}{% endif %}
+                </p>
+            </div>
+            <a href="{% url 'resultados_busca' busca.id %}" class="inline-flex items-center px-4 py-2 bg-gray-200 hover:bg-gray-300 text-gray-700 font-semibold rounded-lg transition">
+                <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
+                </svg>
+                Voltar aos Resultados
+            </a>
+        </div>
+    </div>
+
+    <!-- Estatisticas da busca -->
+    <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+        <div class="bg-white rounded-xl shadow p-4 text-center">
+            <p class="text-3xl font-bold text-blue-600">{{ total_clientes }}</p>
+            <p class="text-sm text-gray-600">Total de leads</p>
+        </div>
+        <div class="bg-white rounded-xl shadow p-4 text-center">
+            <p class="text-3xl font-bold text-green-600">{{ total_com_telefone }}</p>
+            <p class="text-sm text-gray-600">Com telefone</p>
+        </div>
+        <div class="bg-white rounded-xl shadow p-4 text-center">
+            <p class="text-3xl font-bold text-purple-600">{{ total_com_cnpj }}</p>
+            <p class="text-sm text-gray-600">Com CNPJ</p>
+        </div>
+        <div class="bg-white rounded-xl shadow p-4 text-center">
+            <p class="text-3xl font-bold text-orange-600">{{ total_pendentes }}</p>
+            <p class="text-sm text-gray-600">Pendentes</p>
+        </div>
+    </div>
+
+    {% if ja_enriquecida %}
+    <!-- Ja enriquecida -->
+    <div class="bg-green-50 border border-green-200 rounded-2xl p-6">
+        <div class="flex items-center gap-3 mb-4">
+            <svg class="w-8 h-8 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+            </svg>
+            <h2 class="text-xl font-bold text-green-800">Busca ja enriquecida!</h2>
+        </div>
+        <p class="text-green-700 mb-4">
+            Esta busca foi enriquecida em {{ busca.data_enriquecimento|date:"d/m/Y H:i" }}.
+            {{ busca.total_qualificados }} leads qualificados (score >= 60).
+        </p>
+        <div class="flex gap-3">
+            <a href="{% url 'leads_qualificados' busca.id %}" class="inline-flex items-center px-6 py-3 bg-green-600 hover:bg-green-700 text-white font-semibold rounded-lg transition">
+                <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
+                </svg>
+                Ver Leads Qualificados ({{ busca.total_qualificados }})
+            </a>
+            {% if total_pendentes > 0 %}
+            <form method="post" class="inline">
+                {% csrf_token %}
+                <input type="hidden" name="validar_whatsapp" value="on">
+                <button type="submit" class="inline-flex items-center px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-lg transition">
+                    Enriquecer Pendentes ({{ total_pendentes }})
+                </button>
+            </form>
+            {% endif %}
+        </div>
+    </div>
+    {% else %}
+    <!-- Formulario de enriquecimento -->
+    <div class="bg-white rounded-2xl shadow-lg p-6">
+        <h2 class="text-xl font-bold text-gray-900 mb-4">Pipeline de Enriquecimento</h2>
+
+        <div class="space-y-4 mb-6">
+            <!-- Etapa 1 -->
+            <div class="flex items-start gap-4 p-4 bg-blue-50 rounded-xl">
+                <div class="flex-shrink-0 w-10 h-10 bg-blue-600 text-white rounded-full flex items-center justify-center font-bold">1</div>
+                <div>
+                    <h3 class="font-semibold text-gray-900">Consulta CNPJ (BrasilAPI)</h3>
+                    <p class="text-sm text-gray-600">Para leads com CNPJ: busca razao social, CNAE, porte, situacao cadastral, capital social</p>
+                </div>
+            </div>
+            <!-- Etapa 2 -->
+            <div class="flex items-start gap-4 p-4 bg-green-50 rounded-xl">
+                <div class="flex-shrink-0 w-10 h-10 bg-green-600 text-white rounded-full flex items-center justify-center font-bold">2</div>
+                <div>
+                    <h3 class="font-semibold text-gray-900">Validacao WhatsApp (Evolution API)</h3>
+                    <p class="text-sm text-gray-600">Verifica se o telefone tem WhatsApp ativo. Requer instancia conectada.</p>
+                </div>
+            </div>
+            <!-- Etapa 3 -->
+            <div class="flex items-start gap-4 p-4 bg-purple-50 rounded-xl">
+                <div class="flex-shrink-0 w-10 h-10 bg-purple-600 text-white rounded-full flex items-center justify-center font-bold">3</div>
+                <div>
+                    <h3 class="font-semibold text-gray-900">Presenca Digital</h3>
+                    <p class="text-sm text-gray-600">Verifica se o website esta ativo e se tem email corporativo (indicador de presenca digital)</p>
+                </div>
+            </div>
+            <!-- Etapa 4 -->
+            <div class="flex items-start gap-4 p-4 bg-orange-50 rounded-xl">
+                <div class="flex-shrink-0 w-10 h-10 bg-orange-600 text-white rounded-full flex items-center justify-center font-bold">4</div>
+                <div>
+                    <h3 class="font-semibold text-gray-900">Lead Scoring</h3>
+                    <p class="text-sm text-gray-600">
+                        Pontua cada lead: CNPJ ativo (+30) | WhatsApp (+25) | Presenca digital (+20) | Porte (+15) | Avaliacao Google (+10)
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <form method="post" id="enrichForm">
+            {% csrf_token %}
+            <div class="flex items-center gap-3 mb-6 p-4 bg-gray-50 rounded-xl">
+                <input type="checkbox" name="validar_whatsapp" id="validar_whatsapp" checked
+                       class="w-5 h-5 text-green-600 rounded focus:ring-green-500">
+                <label for="validar_whatsapp" class="text-gray-700">
+                    <span class="font-semibold">Validar WhatsApp</span>
+                    <span class="text-sm text-gray-500 block">Requer instancia Evolution API conectada. Desmarque se nao tiver.</span>
+                </label>
+            </div>
+
+            <button type="submit" id="enrichBtn"
+                    class="w-full inline-flex items-center justify-center px-6 py-4 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-xl text-lg transition"
+                    onclick="this.disabled=true; this.innerHTML='<svg class=\'animate-spin w-6 h-6 mr-3\' fill=\'none\' viewBox=\'0 0 24 24\'><circle class=\'opacity-25\' cx=\'12\' cy=\'12\' r=\'10\' stroke=\'currentColor\' stroke-width=\'4\'></circle><path class=\'opacity-75\' fill=\'currentColor\' d=\'M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z\'></path></svg> Enriquecendo {{ total_pendentes }} leads... Aguarde.'; this.form.submit();">
+                <svg class="w-6 h-6 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
+                </svg>
+                Enriquecer {{ total_pendentes }} Leads
+            </button>
+        </form>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}
