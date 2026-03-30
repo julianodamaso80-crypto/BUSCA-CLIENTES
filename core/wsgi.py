@@ -9,11 +9,15 @@ os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'core.settings')
 
 application = get_wsgi_application()
 
-# Run migrations and create superuser on Vercel deploy
+# Run migrations and collectstatic on Vercel deploy
 if os.environ.get('VERCEL'):
     from django.core.management import call_command
     try:
         call_command('migrate', '--noinput')
+    except Exception:
+        pass
+    try:
+        call_command('collectstatic', '--noinput')
     except Exception:
         pass
 
