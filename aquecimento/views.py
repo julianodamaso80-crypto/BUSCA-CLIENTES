@@ -138,8 +138,8 @@ def adicionar_chip(request, plano_id):
     """Adiciona um chip ao plano de aquecimento"""
     plano = get_object_or_404(PlanoAquecimento, id=plano_id, usuario=request.user)
 
-    if plano.chips.count() >= 20:
-        return JsonResponse({'success': False, 'error': 'Limite de 20 chips atingido'})
+    if plano.chips.count() >= 10:
+        return JsonResponse({'success': False, 'error': 'Limite de 10 chips atingido'})
 
     instancia_id = request.POST.get('instancia_id')
     apelido = request.POST.get('apelido', '')

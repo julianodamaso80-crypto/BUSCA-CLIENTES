@@ -34,13 +34,11 @@ urlpatterns = [
     path('admin/', admin.site.urls),
 ]
 
-# disparo e aquecimento dependem de openai e Evolution API
-# que nao estao disponiveis no ambiente serverless da Vercel
-if not IS_VERCEL:
-    urlpatterns += [
-        path('disparo/', include('disparo.urls')),
-        path('aquecimento/', include('aquecimento.urls')),
-    ]
+# Disparo e Aquecimento
+urlpatterns += [
+    path('disparo/', include('disparo.urls')),
+    path('aquecimento/', include('aquecimento.urls')),
+]
 
 if settings.DEBUG and not IS_VERCEL:
     try:
