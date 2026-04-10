@@ -13,6 +13,7 @@ urlpatterns = [
 
     # Chips
     path('<int:plano_id>/adicionar-chip/', views.adicionar_chip, name='adicionar_chip'),
+    path('<int:plano_id>/chip-status/<int:chip_id>/', views.chip_qr_status, name='chip_qr_status'),
     path('<int:plano_id>/remover-chip/<int:chip_id>/', views.remover_chip, name='remover_chip'),
 
     # Controle do aquecimento

@@ -135,19 +135,16 @@ def detalhe_plano(request, plano_id):
 @login_required
 @require_POST
 def adicionar_chip(request, plano_id):
-    """Adiciona um chip ao plano de aquecimento"""
+    """Cria instancia na Evolution automaticamente, gera QR Code e adiciona chip"""
     plano = get_object_or_404(PlanoAquecimento, id=plano_id, usuario=request.user)
 
     if plano.chips.count() >= 10:
         return JsonResponse({'success': False, 'error': 'Limite de 10 chips atingido'})
 
-    instancia_id = request.POST.get('instancia_id')
     apelido = request.POST.get('apelido', '')
     persona = request.POST.get('persona', '')
 
-    instancia = get_object_or_404(InstanciaWhatsApp, id=instancia_id, usuario=request.user)
-
-    # Se nao informou persona, usar uma aleatoria
+    # Atribuir persona automatica se nao informada
     if not persona or not apelido:
         usados = list(plano.chips.values_list('apelido', flat=True))
         disponiveis = [p for p in PERSONAS_PADRAO if p['apelido'] not in usados]
@@ -156,23 +153,104 @@ def adicionar_chip(request, plano_id):
             apelido = apelido or escolhida['apelido']
             persona = persona or escolhida['persona']
 
-    # Buscar numero conectado
-    numero = instancia.numero_conectado or ''
+    # Gerar nome unico para instancia
+    import uuid
+    instance_name = f"aquec_{plano.id}_{uuid.uuid4().hex[:8]}"
 
+    # Criar instancia na Evolution API automaticamente com webhook e configs
+    evolution = EvolutionAPIService()
+    webhook_url = request.build_absolute_uri('/aquecimento/webhook/')
+    resultado = evolution.criar_instancia_completa(instance_name, webhook_url)
+
+    if not resultado['success']:
+        return JsonResponse({'success': False, 'error': f'Erro ao criar instancia: {resultado["error"]}'})
+
+    # Criar InstanciaWhatsApp no banco
+    instancia = InstanciaWhatsApp.objects.create(
+        usuario=request.user,
+        nome=instance_name,
+        instance_id=resultado.get('instance_id', ''),
+        status='qr_code',
+    )
+
+    # Criar chip vinculado
     chip = ChipAquecimento.objects.create(
         plano=plano,
         instancia=instancia,
-        numero=numero,
+        numero='',
         apelido=apelido,
         persona=persona,
-        status='conectado' if instancia.status == 'connected' else 'aguardando',
+        status='aguardando',
     )
+
+    # Buscar QR Code
+    qr_result = evolution.obter_qrcode(instance_name)
+    qr_base64 = None
+    if qr_result['success']:
+        data = qr_result['data']
+        qr_base64 = data.get('base64') or data.get('qrcode', {}).get('base64')
 
     return JsonResponse({
         'success': True,
         'chip_id': chip.id,
         'apelido': chip.apelido,
-        'status': chip.get_status_display(),
+        'instance_name': instance_name,
+        'qr_code': qr_base64,
+    })
+
+
+@login_required
+@require_GET
+def chip_qr_status(request, plano_id, chip_id):
+    """Polling: retorna QR Code atualizado e status de conexao do chip"""
+    plano = get_object_or_404(PlanoAquecimento, id=plano_id, usuario=request.user)
+    chip = get_object_or_404(ChipAquecimento, id=chip_id, plano=plano)
+
+    evolution = EvolutionAPIService()
+
+    # Verificar se ja conectou
+    conn_result = evolution.verificar_conexao(chip.instancia.nome)
+    if conn_result['success']:
+        data = conn_result['data']
+        state = data.get('instance', {}).get('state') or data.get('state', '')
+
+        if state == 'open':
+            # Conectou! Buscar numero
+            info = evolution.obter_info_instancia(chip.instancia.nome)
+            numero = ''
+            if info['success']:
+                info_data = info['data']
+                if isinstance(info_data, list) and len(info_data) > 0:
+                    inst_info = info_data[0]
+                    owner = inst_info.get('ownerJid', '') or inst_info.get('instance', {}).get('owner', '')
+                    numero = owner.split('@')[0] if '@' in owner else owner
+
+            # Atualizar chip e instancia
+            chip.status = 'conectado'
+            chip.numero = numero
+            chip.save()
+
+            chip.instancia.status = 'connected'
+            chip.instancia.numero_conectado = numero
+            chip.instancia.ultima_conexao = timezone.now()
+            chip.instancia.save()
+
+            return JsonResponse({
+                'status': 'connected',
+                'numero': numero,
+                'apelido': chip.apelido,
+            })
+
+    # Ainda nao conectou — retornar QR atualizado
+    qr_result = evolution.obter_qrcode(chip.instancia.nome)
+    qr_base64 = None
+    if qr_result['success']:
+        data = qr_result['data']
+        qr_base64 = data.get('base64') or data.get('qrcode', {}).get('base64')
+
+    return JsonResponse({
+        'status': 'waiting_qr',
+        'qr_code': qr_base64,
     })
 
 

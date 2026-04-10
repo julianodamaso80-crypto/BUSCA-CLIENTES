@@ -19,7 +19,7 @@ class EvolutionAPIService:
         }
 
     def criar_instancia(self, nome_instancia):
-        """Cria uma nova instância no Evolution API"""
+        """Cria uma nova instância no Evolution API (basico)"""
         url = f"{self.base_url}/instance/create"
         payload = {
             "instanceName": nome_instancia,
@@ -31,6 +31,48 @@ class EvolutionAPIService:
             response = requests.post(url, json=payload, headers=self.headers)
             response.raise_for_status()
             return {'success': True, 'data': response.json()}
+        except requests.exceptions.RequestException as e:
+            return {'success': False, 'error': str(e)}
+
+    def criar_instancia_completa(self, nome_instancia, webhook_url=None):
+        """Cria instancia na Evolution com todas configuracoes automaticas:
+        - QR Code habilitado
+        - Webhook configurado
+        - Rejeitar chamadas
+        - Ignorar grupos
+        - Sem sync de historico
+        """
+        url = f"{self.base_url}/instance/create"
+        payload = {
+            "instanceName": nome_instancia,
+            "integration": "WHATSAPP-BAILEYS",
+            "qrcode": True,
+            "groupsIgnore": True,
+            "rejectCall": True,
+            "msgCall": "Nao aceito chamadas, envie mensagem de texto.",
+            "alwaysOnline": False,
+            "readMessages": False,
+            "syncFullHistory": False,
+        }
+
+        if webhook_url:
+            payload["webhook"] = {
+                "url": webhook_url,
+                "byEvents": False,
+                "base64": True,
+                "events": [
+                    "QRCODE_UPDATED",
+                    "CONNECTION_UPDATE",
+                    "MESSAGES_UPSERT",
+                ]
+            }
+
+        try:
+            response = requests.post(url, json=payload, headers=self.headers, timeout=30)
+            response.raise_for_status()
+            data = response.json()
+            instance_id = data.get('hash', '') or data.get('instance', {}).get('instanceId', '')
+            return {'success': True, 'data': data, 'instance_id': instance_id}
         except requests.exceptions.RequestException as e:
             return {'success': False, 'error': str(e)}
 
