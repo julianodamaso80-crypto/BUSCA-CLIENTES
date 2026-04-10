@@ -249,7 +249,13 @@
             </div>
             <div id="qr-container" class="hidden">
                 <p class="text-sm text-gray-600 mb-3">Abra o WhatsApp no chip e escaneie:</p>
-                <img id="qr-image" src="" alt="QR Code" class="mx-auto w-64 h-64 rounded-lg border-2 border-orange-200">
+                <div id="qr-image-wrap">
+                    <img id="qr-image" src="" alt="QR Code" class="mx-auto w-64 h-64 rounded-lg border-2 border-orange-200">
+                </div>
+                <div id="pairing-code-wrap" class="hidden mt-3">
+                    <p class="text-sm text-gray-600 mb-1">Ou use o codigo de pareamento:</p>
+                    <p id="pairing-code-text" class="text-2xl font-mono font-bold tracking-widest text-orange-600"></p>
+                </div>
                 <p class="text-xs text-gray-400 mt-3 flex items-center justify-center gap-1">
                     <span class="inline-block w-2 h-2 bg-orange-500 rounded-full animate-pulse"></span>
                     Aguardando leitura do QR Code...
@@ -331,8 +337,8 @@ function adicionarChip() {
             document.getElementById('modal-titulo').textContent = 'Escaneie o QR Code';
 
             // Mostrar QR se ja veio
-            if (data.qr_code) {
-                mostrarQr(data.qr_code);
+            if (data.qr_code || data.pairing_code) {
+                mostrarQr(data.qr_code, data.pairing_code);
             }
 
             // Iniciar polling a cada 3s
@@ -349,12 +355,20 @@ function adicionarChip() {
     });
 }
 
-function mostrarQr(base64) {
+function mostrarQr(base64, pairingCode) {
     document.getElementById('qr-loading').classList.add('hidden');
     document.getElementById('qr-container').classList.remove('hidden');
-    const img = document.getElementById('qr-image');
-    // Se ja vem com prefixo data:image, usa direto
-    img.src = base64.startsWith('data:') ? base64 : 'data:image/png;base64,' + base64;
+
+    if (base64) {
+        const img = document.getElementById('qr-image');
+        img.src = base64.startsWith('data:') ? base64 : 'data:image/png;base64,' + base64;
+        document.getElementById('qr-image-wrap').classList.remove('hidden');
+    }
+
+    if (pairingCode) {
+        document.getElementById('pairing-code-wrap').classList.remove('hidden');
+        document.getElementById('pairing-code-text').textContent = pairingCode;
+    }
 }
 
 function iniciarPollingQr(chipId) {
@@ -370,8 +384,8 @@ function iniciarPollingQr(chipId) {
                 document.getElementById('modal-titulo').textContent = 'Conectado!';
                 document.getElementById('conectado-info').textContent =
                     (data.apelido || 'Chip') + ' conectado com numero ' + (data.numero || 'desconhecido');
-            } else if (data.qr_code) {
-                mostrarQr(data.qr_code);
+            } else if (data.qr_code || data.pairing_code) {
+                mostrarQr(data.qr_code, data.pairing_code);
             }
         })
         .catch(() => {});

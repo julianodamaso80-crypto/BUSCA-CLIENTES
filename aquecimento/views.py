@@ -183,19 +183,21 @@ def adicionar_chip(request, plano_id):
         status='aguardando',
     )
 
-    # Buscar QR Code
-    qr_result = evolution.obter_qrcode(instance_name)
-    qr_base64 = None
-    if qr_result['success']:
-        data = qr_result['data']
-        qr_base64 = data.get('base64') or data.get('qrcode', {}).get('base64')
+    # Conectar instancia para gerar QR Code (doc: GET /instance/connect/{instance})
+    connect_result = evolution.conectar_instancia(instance_name)
+    pairing_code = None
+    qr_code = None
+    if connect_result['success']:
+        pairing_code = connect_result.get('pairingCode')
+        qr_code = connect_result.get('base64')  # Algumas versoes retornam base64
 
     return JsonResponse({
         'success': True,
         'chip_id': chip.id,
         'apelido': chip.apelido,
         'instance_name': instance_name,
-        'qr_code': qr_base64,
+        'pairing_code': pairing_code,
+        'qr_code': qr_code,
     })
 
 
@@ -241,16 +243,18 @@ def chip_qr_status(request, plano_id, chip_id):
                 'apelido': chip.apelido,
             })
 
-    # Ainda nao conectou — retornar QR atualizado
-    qr_result = evolution.obter_qrcode(chip.instancia.nome)
-    qr_base64 = None
-    if qr_result['success']:
-        data = qr_result['data']
-        qr_base64 = data.get('base64') or data.get('qrcode', {}).get('base64')
+    # Ainda nao conectou — buscar QR atualizado via connect endpoint
+    connect_result = evolution.conectar_instancia(chip.instancia.nome)
+    qr_code = None
+    pairing_code = None
+    if connect_result['success']:
+        qr_code = connect_result.get('base64')
+        pairing_code = connect_result.get('pairingCode')
 
     return JsonResponse({
         'status': 'waiting_qr',
-        'qr_code': qr_base64,
+        'qr_code': qr_code,
+        'pairing_code': pairing_code,
     })
 
 

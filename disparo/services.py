@@ -35,13 +35,11 @@ class EvolutionAPIService:
             return {'success': False, 'error': str(e)}
 
     def criar_instancia_completa(self, nome_instancia, webhook_url=None):
-        """Cria instancia na Evolution com todas configuracoes automaticas:
-        - QR Code habilitado
-        - Webhook configurado
-        - Rejeitar chamadas
-        - Ignorar grupos
-        - Sem sync de historico
+        """Cria instancia na Evolution API com todas configuracoes.
+        Baseado na doc oficial: POST /instance/create
+        Depois configura webhook via POST /webhook/set/{instance}
         """
+        # 1. Criar instancia
         url = f"{self.base_url}/instance/create"
         payload = {
             "instanceName": nome_instancia,
@@ -55,24 +53,52 @@ class EvolutionAPIService:
             "syncFullHistory": False,
         }
 
-        if webhook_url:
-            payload["webhook"] = {
-                "url": webhook_url,
-                "byEvents": False,
-                "base64": True,
-                "events": [
-                    "QRCODE_UPDATED",
-                    "CONNECTION_UPDATE",
-                    "MESSAGES_UPSERT",
-                ]
-            }
-
         try:
             response = requests.post(url, json=payload, headers=self.headers, timeout=30)
             response.raise_for_status()
             data = response.json()
-            instance_id = data.get('hash', '') or data.get('instance', {}).get('instanceId', '')
-            return {'success': True, 'data': data, 'instance_id': instance_id}
+            instance_id = data.get('instance', {}).get('instanceId', '')
+            apikey = data.get('hash', {}).get('apikey', '') if isinstance(data.get('hash'), dict) else str(data.get('hash', ''))
+        except requests.exceptions.RequestException as e:
+            return {'success': False, 'error': str(e)}
+
+        # 2. Configurar webhook via endpoint dedicado (doc: POST /webhook/set/{instance})
+        if webhook_url:
+            try:
+                wh_url = f"{self.base_url}/webhook/set/{nome_instancia}"
+                wh_payload = {
+                    "enabled": True,
+                    "url": webhook_url,
+                    "webhookByEvents": False,
+                    "webhookBase64": True,
+                    "events": [
+                        "QRCODE_UPDATED",
+                        "CONNECTION_UPDATE",
+                        "MESSAGES_UPSERT",
+                    ]
+                }
+                requests.post(wh_url, json=wh_payload, headers=self.headers, timeout=15)
+            except Exception:
+                pass  # Webhook falhar nao impede o fluxo
+
+        return {'success': True, 'data': data, 'instance_id': instance_id, 'apikey': apikey}
+
+    def conectar_instancia(self, nome_instancia):
+        """Gera QR Code / pairing code para conectar. Doc: GET /instance/connect/{instance}
+        Retorna pairingCode e code (dados brutos do QR)
+        """
+        url = f"{self.base_url}/instance/connect/{nome_instancia}"
+        try:
+            response = requests.get(url, headers=self.headers, timeout=30)
+            response.raise_for_status()
+            data = response.json()
+            return {
+                'success': True,
+                'pairingCode': data.get('pairingCode'),
+                'code': data.get('code'),
+                'base64': data.get('base64'),
+                'count': data.get('count'),
+            }
         except requests.exceptions.RequestException as e:
             return {'success': False, 'error': str(e)}
 
