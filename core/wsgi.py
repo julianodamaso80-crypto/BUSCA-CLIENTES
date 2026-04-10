@@ -30,20 +30,19 @@ if os.environ.get('VERCEL'):
     # 3. Create superuser if not exists
     try:
         from django.contrib.auth.models import User
-        admin_email = 'julianodamaso80@gmail.com'
+        admin_username = 'julianodamaso80@gmail.com'
         admin_password = os.environ.get('ADMIN_PASSWORD', '160807')
-        if not User.objects.filter(username='admin').exists():
+        # Remove admin antigo se existir
+        User.objects.filter(username='admin').exclude(username=admin_username).delete()
+        if not User.objects.filter(username=admin_username).exists():
             User.objects.create_superuser(
-                username='admin',
-                email=admin_email,
+                username=admin_username,
+                email=admin_username,
                 password=admin_password,
             )
         else:
-            # Atualiza email e senha do admin existente
-            admin_user = User.objects.get(username='admin')
-            if admin_user.email != admin_email:
-                admin_user.email = admin_email
-                admin_user.set_password(admin_password)
-                admin_user.save()
+            user = User.objects.get(username=admin_username)
+            user.set_password(admin_password)
+            user.save()
     except Exception as e:
         print(f'Superuser error: {e}')
