@@ -7,7 +7,11 @@ from django.views.decorators.csrf import csrf_exempt
 from django.utils import timezone
 from django.conf import settings
 import json
-from openai import OpenAI
+
+try:
+    from openai import OpenAI
+except ImportError:
+    OpenAI = None  # type: ignore[assignment,misc]
 
 from .models import (
     InstanciaWhatsApp, ConfiguracaoDisparo, CampanhaDisparo,
@@ -640,6 +644,13 @@ def gerar_prompt_ia(request):
             return JsonResponse({
                 'success': False,
                 'error': 'Por favor, escreva uma mensagem primeiro.'
+            })
+
+        # Verificar se openai está instalado
+        if OpenAI is None:
+            return JsonResponse({
+                'success': False,
+                'error': 'Módulo openai não está instalado neste ambiente.'
             })
 
         # Verificar se a chave da API está configurada
