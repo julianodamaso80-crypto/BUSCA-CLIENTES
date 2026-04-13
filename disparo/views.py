@@ -77,15 +77,16 @@ def criar_instancia(request):
     if InstanciaWhatsApp.objects.filter(usuario=request.user, nome=nome).exists():
         return JsonResponse({'success': False, 'error': 'Já existe uma instância com este nome'})
 
-    # Criar no Evolution API
+    # Criar no Evolution API + configurar webhook automaticamente
     evolution = EvolutionAPIService()
-    resultado = evolution.criar_instancia(nome)
+    webhook_url = request.build_absolute_uri('/disparo/webhook/')
+    resultado = evolution.criar_instancia_completa(nome, webhook_url=webhook_url)
 
     if resultado['success']:
         instancia = InstanciaWhatsApp.objects.create(
             usuario=request.user,
             nome=nome,
-            instance_id=resultado['data'].get('instance', {}).get('instanceId'),
+            instance_id=resultado.get('instance_id') or resultado['data'].get('instance', {}).get('instanceId'),
             status='qr_code'
         )
         return JsonResponse({
@@ -493,17 +494,22 @@ def minha_instancia(request):
 
     # Verificar se já existe no banco local
     instancia = InstanciaWhatsApp.objects.filter(usuario=request.user).first()
+    evolution = EvolutionAPIService()
 
     if not instancia:
-        # Registrar a instância existente da Evolution API
+        # Criar instancia na Evolution API + configurar webhook (fluxo automatico)
+        nome_instancia = f'user_{request.user.id}'
+        webhook_url = request.build_absolute_uri('/disparo/webhook/')
+        resultado = evolution.criar_instancia_completa(nome_instancia, webhook_url=webhook_url)
+
         instancia = InstanciaWhatsApp.objects.create(
             usuario=request.user,
             nome=nome_instancia,
+            instance_id=resultado.get('instance_id') if resultado.get('success') else None,
             status='qr_code'
         )
 
     # Verificar status atual na Evolution API
-    evolution = EvolutionAPIService()
     status_result = evolution.verificar_conexao(instancia.nome)
     numero_conectado = None
 
